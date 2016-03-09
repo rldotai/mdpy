@@ -22,19 +22,19 @@ def rowsum(mat):
     assert(is_matrix(mat))
     return np.sum(mat, axis=0)
 
-def someone(n, *zeros):
+def someones(n, *ones):
+    """Generate a vector of zeros except for ones at the given indices."""
+    # TODO: a better name for this!
+    ret = np.zeros(n)
+    ret[[ones]] = 1
+    return ret
+
+def somezeros(n, *zeros):
     """Generate a vector of ones except at particular indices."""
     # TODO: get a better name for this!
     # TODO: fix issue where *zeros is empty
     ret = np.ones(n)
-    ret[zeros] = 0
-    return ret
-
-def somenone(n, *ones):
-    """Generate a vector of zeros except for ones at the given indices."""
-    # TODO: a better name for this!
-    ret = np.zeros(n)
-    ret[ones] = 1
+    ret[[zeros]] = 0
     return ret
 
 def unit(ndim, ix, dtype=np.float):
