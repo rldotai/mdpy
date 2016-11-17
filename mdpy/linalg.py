@@ -6,6 +6,7 @@ from numpy.linalg import det, pinv, matrix_rank, norm
 from .util import as_array
 
 
+# Matrix/vector manipulation
 def cols(mat):
     assert(is_matrix(mat))
     return [x for x in mat.T]
@@ -44,14 +45,6 @@ def unit(ndim, ix, dtype=np.float):
     return np.atleast_1d(ret)
 
 @as_array
-def is_pvec(pvec, tol=1e-6):
-    """Check if a vector represents a probability distribution."""
-    vec = np.ravel(pvec)
-    return (np.size(vec) == np.size(pvec)) \
-    and (np.all(vec >= 0)) \
-    and (1-tol <= np.sum(vec) <= 1+tol)
-
-@as_array
 def normalize(array, axis=None):
     """Normalize an array along an axis."""
     def _normalize(vec):
@@ -60,6 +53,16 @@ def normalize(array, axis=None):
         return np.apply_along_axis(_normalize, axis, array)
     else:
         return _normalize(array)
+
+# Vector properties
+@as_array
+def is_pvec(pvec, tol=1e-6):
+    """Check if a vector represents a probability distribution."""
+    vec = np.ravel(pvec)
+    return (np.size(vec) == np.size(pvec)) \
+    and (np.all(vec >= 0)) \
+    and (1-tol <= np.sum(vec) <= 1+tol)
+
 
 # Matrix properties
 
@@ -233,6 +236,16 @@ def distribution_matrix(mat):
     """Compute the stationary distribution for a matrix, and return the
     diagonal matrix with the stationary distribution along its diagonal."""
     return np.diag(stationary(mat))
+
+@as_array
+def matrix_series(mat, n):
+    """Compute the matrix series for `n` terms using matrix `mat`."""
+    assert(is_square(mat))
+    _I  = np.eye(len(mat))
+    ret = np.copy(_I)
+    for i in range(n):
+        ret += mat @ ret
+    return ret
 
 
 # Generating stochastic matrices and MDPs
