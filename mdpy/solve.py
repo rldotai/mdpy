@@ -128,35 +128,48 @@ def followon(P, G, di):
     return np.dot(np.linalg.inv(I - G @ P.T), di)
 
 ##############################################################################
-# The following may not be functional, need to test with rest of repo
+# The following may throw errors, have yet to test w/ rest of repo
 ##############################################################################
-# TODO: Document these functions
+# TODO: Document these functions in more detail
 # TODO: add tests
 # TODO: de-duplicate/normalize with rest of repo style
 def mc_return(P, r, Γ):
-    assert(mdpy.is_stochastic(P))
+    """Compute the Monte-Carlo return given transition matrix `P`, expected 
+    reward `r`, and state-discount matrix `Γ`."""
+    assert(is_stochastic(P))
     I = np.eye(len(P))
     return np.linalg.pinv(I - P @ Γ) @ r
 
 def ls_weights(P, r, Γ, X):
-    assert(mdpy.is_stochastic(P))
+    """Compute the least-squares weights for transition matrix `P`, expected
+    reward `r`, and state-discount matrix `Γ`, and feature matrix `X`."""
+    assert(is_stochastic(P))
     assert(X.ndim == 2)
     assert(len(X) == len(P))
     value = mc_return(P, r, Γ)
-    dist  = mdpy.stationary(P)
+    dist  = stationary(P)
     D     = np.diag(dist)
     return np.linalg.pinv(X.T @ D @ X) @ X.T @ D @ value
 
 def ls_values(P, r, Γ, X):
+    """Compute the state-values under least-squares function approximation for 
+    transition matrix `P`, expected reward vector `r`, discount matrix `Γ`, 
+    and feature matrix `X`."""
     weights = ls_weights(P, r, Γ, X)
     return X @ weights
 
 def td_weights(P, r, Γ, Λ, X):
-    assert(mdpy.is_stochastic(P))
+    """Compute the weights found at the TD fixed point under linear function 
+    approximation given transition matrix `P`, expected reward vector `r`, 
+    discount matrix `Γ`, bootstrapping matrix `Λ, and feature matrix `X`."""
+    assert(is_stochastic(P))
     assert(X.ndim == 2)
     assert(len(X) == len(P))
-    assert(mdp.is_diagonal(Γ))
-    assert(mdp.is_diagonal(Λ))
+    assert(is_diagonal(Γ))
+    assert(is_diagonal(Λ))
+    I    = np.eye(len(P))
+    dist = stationary(P)
+    D    = np.diag(dist)
     r_lm = (I - P @ Γ @ Λ) @ r
     P_lm = I - pinv(I - P @ Γ @ Λ) @ (I - P @ Γ)
     A = X.T @ D @ (I - P_lm) @ X
@@ -164,19 +177,33 @@ def td_weights(P, r, Γ, Λ, X):
     return np.linalg.pinv(A) @ b
 
 def td_values(P, r, Γ, Λ, X):
+    """Compute state values found at the TD fixed point under linear function
+    approximation given transition matrix `P`, expected reward vector `r`, 
+    discount matrix `Γ`, bootstrapping matrix `Λ, and feature matrix `X`."""
     return X @ td_weights(P, r, Γ, Λ, X)
     
 def lambda_return(P, r, Γ, Λ, v_hat):
+    """Compute the λ-return given transition matrix `P`, expected reward vector
+    `r`, discount matrix `Γ`, bootstrapping matrix `Λ,  and approximate 
+    state-values `v_hat`."""
+    assert(is_stochastic(P))
+    assert(is_diagonal(Γ))
+    assert(is_diagonal(Λ))
+    I = np.eye(len(P))
     # Incorporate next-state's value into expected reward
     r_hat = r + P @ Γ @ (I - Λ) @ v_hat
     # Solve the Bellman equation
     return np.linalg.pinv(I - P @ Γ @ Λ) @ r_hat
 
 def sobel_variance(P, R, Γ):
-    assert(mdpy.is_stochastic(P))
+    """Compute the variance of the return using Sobel's method, given 
+    transition matrix `P`, expected transition reward matrix `R`, and 
+    state-dependent discount matrix `Γ`."""
+    assert(is_stochastic(P))
     assert(P.shape == R.shape)
-    assert(mdp.is_diagonal(Γ))
+    assert(is_diagonal(Γ))
     ns = len(P)
+    I = np.eye(len(P))
     r = (P * R) @ np.ones(ns)
     v_pi = mc_return(P, r, Γ)
     
@@ -188,38 +215,42 @@ def sobel_variance(P, R, Γ):
     # Solve Bellman equation
     return np.linalg.pinv(I - P @ Γ @ Γ) @ q
 
-def second_moment(P, R, Γ, Λ):
-    assert(mdpy.is_stochastic(P))
+def second_moment(P, R, Γ):
+    """Compute the second moment of the return using the method from White and
+    White, given transition matrix `P`, expected transition reward matrix `R`, 
+    and state-dependent discount matrix `Γ`."""
+    assert(is_stochastic(P))
     assert(P.shape == R.shape)
-    assert(mdp.is_diagonal(Γ))
-    assert(mdp.is_diagonal(Λ))
+    assert(is_diagonal(Γ))
     ns = len(P)
-    # Here the MC-return is both the lambda return and its approximation
-    v_lm = mc_return(P, r, Γ)
+    I = np.eye(len(P))
+    # Compute expected state values
+    v_pi = mc_return(P, r, Γ)
     γ = np.diag(Γ)
-    λ = np.diag(Λ)
     
     # Compute reward-like transition matrix
     R_bar = np.zeros((ns, ns))
     for i in range(ns):
         for j in range(ns):
-            R_bar[i,j] = R[i,j]**2 \
-                + (γ[j] * (1-λ[j])*v_lm[j])**2 \
-                + 2*( γ[j] * (1 - λ[j]) * R[i,j] * v_lm[j] ) \
-                + 2*( γ[j] * λ[j] * R[i,j] * v_lm[j]) \
-                + 2*( (γ[j]**2)*λ[j]*(1-λ[j]) * (v_lm[j]**2) )
+            R_bar[i,j] = R[i,j]**2 + 2*( γ[j] * R[i,j] * v_lm[j])
     # Set up Bellman equation for second moment
     r_bar = (P * R_bar) @ np.ones(ns)
     
     # Solve the Bellman equation
-    return np.linalg.pinv(I - P @ Γ @ Γ @ Λ @ Λ) @ r_bar
+    return np.linalg.pinv(I - P @ Γ @ Γ) @ r_bar
+
 
 def lambda_second_moment(P, R, Γ, Λ, v_hat):
-    assert(mdpy.is_stochastic(P))
+    """Compute the second moment of the λ-return using the method from White &
+    White, given transition matrix `P`, expected transition reward matrix `R`, 
+    state-dependent discount matrix `Γ`, state-dependent bootstrapping matrix 
+    `Λ`, and approximate values `v_hat`."""
+    assert(is_stochastic(P))
     assert(P.shape == R.shape)
-    assert(mdp.is_diagonal(Γ))
-    assert(mdp.is_diagonal(Λ))
+    assert(is_diagonal(Γ))
+    assert(is_diagonal(Λ))
     ns = len(P)
+    I = np.eye(len(P))
     # Expected immediate reward
     r = (P * R) @ np.ones(ns)
     # Lambda return may be different from approximate lambda return
