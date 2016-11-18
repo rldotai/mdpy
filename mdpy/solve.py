@@ -136,18 +136,18 @@ def followon(P, G, di):
 def mc_return(P, r, Γ):
     """Compute the Monte-Carlo return given transition matrix `P`, expected 
     reward `r`, and state-discount matrix `Γ`."""
-    assert(is_stochastic(P))
+    assert(linalg.is_stochastic(P))
     I = np.eye(len(P))
     return np.linalg.pinv(I - P @ Γ) @ r
 
 def ls_weights(P, r, Γ, X):
     """Compute the least-squares weights for transition matrix `P`, expected
     reward `r`, and state-discount matrix `Γ`, and feature matrix `X`."""
-    assert(is_stochastic(P))
+    assert(linalg.is_stochastic(P))
     assert(X.ndim == 2)
     assert(len(X) == len(P))
     value = mc_return(P, r, Γ)
-    dist  = stationary(P)
+    dist  = linalg.stationary(P)
     D     = np.diag(dist)
     return np.linalg.pinv(X.T @ D @ X) @ X.T @ D @ value
 
@@ -162,13 +162,13 @@ def td_weights(P, r, Γ, Λ, X):
     """Compute the weights found at the TD fixed point under linear function 
     approximation given transition matrix `P`, expected reward vector `r`, 
     discount matrix `Γ`, bootstrapping matrix `Λ, and feature matrix `X`."""
-    assert(is_stochastic(P))
+    assert(linalg.is_stochastic(P))
     assert(X.ndim == 2)
     assert(len(X) == len(P))
-    assert(is_diagonal(Γ))
-    assert(is_diagonal(Λ))
+    assert(linalg.is_diagonal(Γ))
+    assert(linalg.is_diagonal(Λ))
     I    = np.eye(len(P))
-    dist = stationary(P)
+    dist = linalg.stationary(P)
     D    = np.diag(dist)
     r_lm = (I - P @ Γ @ Λ) @ r
     P_lm = I - pinv(I - P @ Γ @ Λ) @ (I - P @ Γ)
@@ -186,9 +186,9 @@ def lambda_return(P, r, Γ, Λ, v_hat):
     """Compute the λ-return given transition matrix `P`, expected reward vector
     `r`, discount matrix `Γ`, bootstrapping matrix `Λ,  and approximate 
     state-values `v_hat`."""
-    assert(is_stochastic(P))
-    assert(is_diagonal(Γ))
-    assert(is_diagonal(Λ))
+    assert(linalg.is_stochastic(P))
+    assert(linalg.is_diagonal(Γ))
+    assert(linalg.is_diagonal(Λ))
     I = np.eye(len(P))
     # Incorporate next-state's value into expected reward
     r_hat = r + P @ Γ @ (I - Λ) @ v_hat
@@ -199,9 +199,9 @@ def sobel_variance(P, R, Γ):
     """Compute the variance of the return using Sobel's method, given 
     transition matrix `P`, expected transition reward matrix `R`, and 
     state-dependent discount matrix `Γ`."""
-    assert(is_stochastic(P))
+    assert(linalg.is_stochastic(P))
     assert(P.shape == R.shape)
-    assert(is_diagonal(Γ))
+    assert(linalg.is_diagonal(Γ))
     ns = len(P)
     I = np.eye(len(P))
     r = (P * R) @ np.ones(ns)
@@ -219,12 +219,13 @@ def second_moment(P, R, Γ):
     """Compute the second moment of the return using the method from White and
     White, given transition matrix `P`, expected transition reward matrix `R`, 
     and state-dependent discount matrix `Γ`."""
-    assert(is_stochastic(P))
+    assert(linalg.is_stochastic(P))
     assert(P.shape == R.shape)
-    assert(is_diagonal(Γ))
+    assert(linalg.is_diagonal(Γ))
     ns = len(P)
     I = np.eye(len(P))
     # Compute expected state values
+    r = (P*R) @ np.ones(ns)
     v_pi = mc_return(P, r, Γ)
     γ = np.diag(Γ)
     
@@ -232,7 +233,7 @@ def second_moment(P, R, Γ):
     R_bar = np.zeros((ns, ns))
     for i in range(ns):
         for j in range(ns):
-            R_bar[i,j] = R[i,j]**2 + 2*( γ[j] * R[i,j] * v_lm[j])
+            R_bar[i,j] = R[i,j]**2 + 2*( γ[j] * R[i,j] * v_pi[j])
     # Set up Bellman equation for second moment
     r_bar = (P * R_bar) @ np.ones(ns)
     
@@ -245,10 +246,10 @@ def lambda_second_moment(P, R, Γ, Λ, v_hat):
     White, given transition matrix `P`, expected transition reward matrix `R`, 
     state-dependent discount matrix `Γ`, state-dependent bootstrapping matrix 
     `Λ`, and approximate values `v_hat`."""
-    assert(is_stochastic(P))
+    assert(linalg.is_stochastic(P))
     assert(P.shape == R.shape)
-    assert(is_diagonal(Γ))
-    assert(is_diagonal(Λ))
+    assert(linalg.is_diagonal(Γ))
+    assert(linalg.is_diagonal(Λ))
     ns = len(P)
     I = np.eye(len(P))
     # Expected immediate reward
