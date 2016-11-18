@@ -75,26 +75,6 @@ def warp(P, G, L):
     assert(linalg.is_diagonal(L))
     return potential(P @ G @ L)
 
-# TD
-
-def td_weights(P, G, L, X, r):
-    """The weights found by TD(lambda)."""
-    assert(linalg.is_stochastic(P))
-    I = np.eye(len(P))
-    D = np.diag(linalg.stationary(P))
-    A = X.T @ D @ (I - P @ G) @ X
-    A_inv = np.linalg.pinv(A)
-    b = X.T @ D @ r
-
-    return np.dot(A_inv, b)
-
-def td_solution(P, G, L, X, r):
-    """The state values found by TD(lambda)
-
-    TODO: General TD(lambda)
-    """
-    theta = td_weights(P, G, L, X, r)
-    return X @ theta
 
 # ETD
 def etd_weights(P, G, L, X, ivec, r):
@@ -103,13 +83,13 @@ def etd_weights(P, G, L, X, ivec, r):
     assert(linalg.is_stochastic(P))
     I = np.eye(len(P))
     di = linalg.stationary(P) * ivec
-    m = potential(L @ G @ P.T) @ potential(G @ P.T) @ di
+    m = pinv(I - L @ G @ P.T) @ (I - G @ P.T) @ di
     M = np.diag(m)
 
     # solve the equation
-    A = X.T @ M @ potential(P @ G @ L) @ (I - P @ G) @ X
+    A = X.T @ M @ pinv(I - P @ G @ L) @ (I - P @ G) @ X
     A_inv = np.linalg.pinv(A)
-    b = X.T @ M @ potential(P @ G @ L) @ r
+    b = X.T @ M @ pinv(I - P @ G @ L) @ r
     return np.dot(A_inv, b)
 
 
