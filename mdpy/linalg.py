@@ -96,7 +96,7 @@ def is_matrix(mat):
 @as_array
 def is_nonnegative(mat):
     """Check if a matrix is nonnegative."""
-    return np.all(mat > 0)
+    return np.all(mat >= 0)
 
 @as_array
 def is_periodic(mat):
@@ -117,6 +117,7 @@ def is_reducible(mat):
     same communicating class (can be reached from each other).
 
     """
+    assert(is_nonnegative(mat))
     #TODO: Find a better method for this
     P = np.copy(mat)
     S = np.zeros_like(mat)
