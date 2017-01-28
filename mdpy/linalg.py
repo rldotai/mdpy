@@ -13,7 +13,7 @@ def cols(mat):
 
 def colsum(mat):
     assert(is_matrix(mat))
-    return np.sum(mat, axis=1)
+    return np.einsum('ij->j', mat)
 
 def rows(mat):
     assert(is_matrix(mat))
@@ -21,7 +21,7 @@ def rows(mat):
 
 def rowsum(mat):
     assert(is_matrix(mat))
-    return np.sum(mat, axis=0)
+    return np.einsum('ij->i', mat)
 
 def someones(n, *ones):
     """Generate a vector of zeros except for ones at the given indices."""
