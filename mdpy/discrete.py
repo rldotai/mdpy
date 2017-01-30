@@ -1,50 +1,37 @@
 """Implementation of a Discrete MDP class."""
 import numpy as np
 
-from .linalg import unit
 
+class ArrayMDP:
+    """MDP class, formulated in terms of multi-arrays.
+    It requires an two arrays, one for the transition probabilities (`T`) and
+    another of the same shape for the expected rewards (`R`).
 
-class DiscreteMDP:
-    """Discrete MDP class."""
-    def __init__(self, ptensor):
-        ptensor = np.array(ptensor)
-        assert(ptensor.ndim == 3)
-        ns, na, nsp = ptensor.shape
-        assert(ns == nsp)
-        self.ns = ns
-        self.na = na
-        # check that it's valid
+    For example, given state `s`, action `a`, and next state `sp`, then the
+    probability of the transition `(s, a, sp)` is `T[s,a,sp]` and the expected
+    reward for undergoing that transition is `R[s,a,sp]`.
+    """
+    def __init__(self, transitions, rewards):
+        """Create an ArrayMDP from the supplied transition and reward arrays."""
+        T = np.array(transitions)
+        R = np.array(rewards)
+        # Check that shapes are valid
+        assert(3 == T.ndim == R.ndim)
+        assert(T.shape == R.shape)
+        # Check that probabilities for `sp` given `s` and `a` sum to 1
+        assert(np.allclose(1, np.einsum('ijk->ij', T))
 
-    @classmethod
-    def random(cls, ns, na, rvar=None):
-        """ Generate a random transition probability matrix for the given
-        numbers of states `ns` and actions `na`.
+        # Initialize the MDP
+        self.T = T
+        self.R = R
 
-        Ensure that each state has some probability of transitioning to a
-        different state.
-        Consider allowing user to specify random variable to draw from.
-        Consider adding code to ensure that the matrix is properly ergodic.
-        Consider having an adjustable sparsity parameter.
+    def under_policy(self, policy):
+        """Produce the Markov process that results from acting according to the
+        given policy in the MDP."""
+        pass
+
+    def prob(self, s, a=None, sp=None):
+        """Get the probability of supplied transition, or of the possible
+        transitions conditioned accordingly.
         """
-        ret = np.zeros((ns, na, ns), dtype=np.float)
-        for s, a in np.ndindex(ns, na):
-            ret[s, a] = np.random.random(ns)
-            ret[s, a] = ret[s, a]/np.sum(ret[s, a]) # normalize
-        return cls(ret)
-
-
-    def transition(self, s, a):
-        """ Transition to a new state according to the probability matrix `pmat`,
-        given action `a` was taken in state `s`.
-        """
-        ns, na, _ = pmat.shape
-        # Allow specifying states/actions as vectors or integer indices
-        if isinstance(s, int):
-            s = unit(ns, s)
-        if isinstance(a, int):
-            a = unit(na, a)
-
-        # Select and return the choice
-        prob = np.dot(a, np.dot(s, pmat))
-        choice = np.random.choice(np.arange(ns), p=prob)
-        return unit(ns, choice)
+        pass
