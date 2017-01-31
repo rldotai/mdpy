@@ -3,6 +3,8 @@
 generally be considered preferable.
 """
 import numpy as np
+import scipy.linalg
+import scipy.stats
 import mdpy
 
 
@@ -74,8 +76,8 @@ class categorical(scipy.stats._distn_infrastructure.rv_sample):
 
         Notes
         -----
-        Overriding because `scipy.stats.rv_discrete` only supports integer values for some
-        stupid reason.
+        Overriding because `scipy.stats.rv_discrete` only supports integer
+        values for some stupid reason.
 
         Changed:
         ```
@@ -94,9 +96,9 @@ class categorical(scipy.stats._distn_infrastructure.rv_sample):
         slow down) existing `numpy` functions.
         """
         args, loc, _ = self._parse_args(*args, **kwds)
-        k, loc = map(scipy.asarray, (k, loc)) # JFC
+        k, loc = map(scipy.asarray, (k, loc))
         args = tuple(map(scipy.asarray, args))
-        k = scipy.asarray((k-loc)) #`k` and `loc` were both already arrays, idiots
+        k = scipy.asarray((k-loc))
         cond0 = self._argcheck(*args)
         cond1 = (k >= self.a) & (k <= self.b)
         cond = cond0 & cond1

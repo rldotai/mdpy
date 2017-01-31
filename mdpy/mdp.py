@@ -1,6 +1,89 @@
 """Implementation of a Discrete MDP class."""
 import numpy as np
+import scipy.linalg
+import scipy.stats
+from numbers import Number
 import mdpy
+
+
+class MarkovProcess:
+    """A class implementing Markov processes, which are like MDPs where you
+    don't make any decisions.
+    It requires two arrays, one for the transition probabilities (`T`) and
+    another of the same shape for the expected rewards (`R`).
+
+    For example, given state `s` and next state `sp`, the probability of the
+    transition `(s, sp)` is `T[s, sp]`, with reward `R[s, sp]`.
+    """
+    def __init__(self, transitions, rewards):
+        T = np.array(transitions)
+        R = np.array(rewards)
+        # Check that shapes are valid
+        assert(2 == T.ndim == R.ndim)
+        assert(T.shape == R.shape)
+        assert(T.shape[0] == T.shape[1])
+        # Check that transition probabilities sum to one
+        assert(np.allclose(1, np.einsum('ij->i', T)))
+
+        # Initialize variables
+        self.T = T
+        self.R = R
+        self._states = np.arange(len(T))
+
+    @classmethod
+    def from_unnormalized(cls, transitions, rewards=None):
+        """Create a Markov Process using an arbitrary transition matrix by
+        taking the absolute value and normalizing the transition probabilities.
+        """
+        pass
+
+    def prob(self, s, sp=None):
+        """Return the probability of the transition, or if `sp` is not given,
+        instead return the probability of every transition from `s`.
+        """
+        return np.squeeze(self.T[s, sp])
+
+    def transition(self, s):
+        return np.random.choice(self._states, p=self.T[s])
+
+    def step(self, s):
+        """Transition from a state to its successor, returning `(sp, r)`."""
+        sp = np.random.choice(self._states, p=self.T[s])
+        r  = self.reward(s, sp)
+        return (sp, r)
+
+    def reward(self, s, sp):
+        """Sample a reward from the transition `(s, sp)`."""
+        r = self.R[s, sp]
+        if isinstance(r, Number):
+            return r
+        elif isinstance(r, scipy.stats._distn_infrastructure.rv_frozen):
+            return r.rvs()
+        elif isinstance(r, scipy.stats._distn_infrastructure.rv_generic):
+            return r.rvs()
+        elif callable(r):
+            return r(s, sp)
+        else:
+            raise TypeError("Reward for transition not understood: (%d, %d)"%(s, sp))
+
+    def expected_reward(self, s, sp=None):
+        """Compute the expected reward either given a state or a transition."""
+        if sp is not None:
+            return self._expectation(self.R[s, sp])
+        else:
+            return np.array([self._expectation(r) for r in self.R[s]])
+
+    def _expectation(self, rwd):
+            """Get the expected value of a reward."""
+            if isinstance(rwd, Number):
+                return rwd
+            elif isinstance(rwd, scipy.stats._distn_infrastructure.rv_frozen):
+                return rwd.mean()
+            elif isinstance(rwd, scipy.stats._distn_infrastructure.rv_generic):
+                return rwd.mean()
+            else:
+                raise TypeError("Unable to get expected value of reward: %s"%(rwd))
+
 
 
 class ArrayMDP:
@@ -52,77 +135,3 @@ class ArrayMDP:
         """
         ret = np.squeeze(self.T[s, a, sp])
         return ret
-
-
-class MarkovProcess:
-    """A class implementing Markov processes, which are like MDPs where you
-    don't make any decisions.
-    It requires two arrays, one for the transition probabilities (`T`) and
-    another of the same shape for the expected rewards (`R`).
-
-    For example, given state `s` and next state `sp`, the probability of the
-    transition `(s, sp)` is `T[s, sp]`, with reward `R[s, sp]`.
-    """
-    def __init__(self, transitions, rewards):
-        T = np.array(transitions)
-        R = np.array(rewards)
-        # Check that shapes are valid
-        assert(2 == T.ndim == R.ndim)
-        assert(T.shape == R.shape)
-        assert(T.shape[0] == T.shape[1])
-        # Check that transition probabilities sum to one
-        assert(np.allclose(1, np.einsum('ij->i', T)))
-
-        # Initialize variables
-        self.T = T
-        self.R = R
-        self._states = np.arange(len(T))
-
-    @classmethod
-    def from_unnormalized(cls, transitions, rewards=None):
-        """Create a Markov Process using an arbitrary transition matrix by
-        taking the absolute value and normalizing the transition probabilities.
-        """
-        pass
-
-    def prob(self, s, sp=None):
-        return np.squeeze(self.T[s, sp])
-
-    def transition(self, s):
-        return np.random.choice(self._states, p=self.T[s])
-
-    def step(self, s):
-        sp = np.random.choice(self._states, p=self.T[s])
-        r  = self.reward(s, sp)
-        return (sp, r)
-
-    def reward(self, s, sp):
-        r = self.R[s, sp]
-        if isinstance(r, Number):
-            return r
-        elif isinstance(r, scipy.stats._distn_infrastructure.rv_frozen):
-            return r.rvs()
-        elif isinstance(r, scipy.stats._distn_infrastructure.rv_generic):
-            return r.rvs()
-        elif callable(r):
-            return r(s, sp)
-        else:
-            raise TypeError("Reward for transition not understood: (%d, %d)"%(s, sp))
-
-    def expected_reward(self, s, sp=None):
-        """Compute the expected reward either given a state or a transition."""
-        if sp is not None:
-            return self._expectation(self.R[s, sp])
-        else:
-            return np.array([self._expectation(r) for r in self.R[s]])
-
-    def _expectation(self, rwd):
-            """Get the expected value of a reward."""
-            if isinstance(rwd, Number):
-                return rwd
-            elif isinstance(rwd, scipy.stats._distn_infrastructure.rv_frozen):
-                return rwd.mean()
-            elif isinstance(rwd, scipy.stats._distn_infrastructure.rv_generic):
-                return rwd.mean()
-            else:
-                raise TypeError("Unable to get expected value of reward: %s"%(rwd))
