@@ -7,9 +7,11 @@ __author__ = 'rldotai <>'
 from . import linalg
 from . import solve
 from . import util
+from . import discrete
 
 from .linalg import *
 from .solve import *
+from .discrete import categorical, drv
 
 # define `__all__` for this package
 __all__ = []

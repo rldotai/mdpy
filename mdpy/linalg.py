@@ -67,7 +67,7 @@ def is_pvec(pvec, tol=1e-6):
 # Matrix properties
 
 @as_array
-def is_absorbing(mat):
+def has_absorbing(mat):
     """Check if the transition matrix has absorbing states.
 
     A state is absorbing if its only outgoing transition is to itself.
