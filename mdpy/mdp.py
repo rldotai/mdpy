@@ -2,8 +2,8 @@
 import numpy as np
 import scipy.linalg
 import scipy.stats
-from numbers import Number
 import mdpy
+from numbers import Number
 
 
 class MarkovProcess:
@@ -36,6 +36,10 @@ class MarkovProcess:
         taking the absolute value and normalizing the transition probabilities.
         """
         pass
+
+    @property
+    def states(self):
+        return np.arange(len(T))
 
     def prob(self, s, sp=None):
         """Return the probability of the transition, or if `sp` is not given,
@@ -83,6 +87,27 @@ class MarkovProcess:
                 return rwd.mean()
             else:
                 raise TypeError("Unable to get expected value of reward: %s"%(rwd))
+
+    def run(self, n, s0=None):
+        """Run the Markov process for `n` steps, return a list of transitions.
+
+        The result has the form:
+
+            `[{'s': s, 'sp': sp, 'r': r}, ...]`
+
+        So for `ret[t]`, 's' is the state at time `t`, 'r' is the reward, and
+        'sp' is the next state.
+        """
+        if s0 is None:
+            s0 = np.random.choice(len(self.states))
+
+        # Set up and run the simulation
+        ret = []
+        _s = s0
+        for t in range(n):
+            sp, r = self.step(s)
+            ret.append({'s': s, 'sp': sp, 'r': r})
+        return ret
 
 
 

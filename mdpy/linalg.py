@@ -1,6 +1,8 @@
+import networkx as nx
 import numpy as np
 import scipy.stats
 from functools import reduce
+from math import gcd
 from numpy.linalg import det, pinv, matrix_rank, norm
 
 from .util import as_array
@@ -75,6 +77,12 @@ def has_absorbing(mat):
     return len(find_terminals(mat)) > 0
 
 @as_array
+def is_aperiodic(mat):
+    """Check if a stochastic matrix is aperiodic."""
+    graph = nx.DiGraph(mat)
+    return nx.is_aperiodic(graph)
+
+@as_array
 def is_diagonal(mat):
     """Check if a matrix is diagonal."""
     if not is_square(mat):
@@ -104,7 +112,8 @@ def is_periodic(mat):
 
     A matrix is periodic if it has a period greater than `2`, that is, if it
     """
-    return (1 < get_period(mat))
+    graph = nx.DiGraph(mat)
+    return not(nx.is_aperiodic(graph))
 
 @as_array
 def is_distribution(vec):
@@ -165,23 +174,28 @@ def find_terminal_indices(mat):
 
 @as_array
 def get_period(mat):
-    """Find the period, assuming that stochastic matrix `mat`
-    is irreducible (states form a single communicating class).
+    """Find the period of the stochastic matrix `mat`.
 
-    NB: There is probably a better way of doing this
+    Uses `networkx` to find the cycles in the graph and computes the GCD over
+    their lengths.
+
+    Notes
+    -----
+    The period is defined as the GCD of all possible return times to a state,
+    or the integer that divides the length of every cycle in the transition
+    graph.
     """
-    from fractions import gcd
-    from functools import reduce
-    tmp = []
-    P = np.eye(len(mat))
-    for i in range(len(mat)):
-        P = np.dot(P, mat)
-        if np.any(np.diag(P) > 0):
-            tmp.append(i)
-    return reduce(gcd, tmp)
+    import networkx as nx
+    graph = nx.DiGraph(mat)
+    return reduce(gcd, [len(x) for x in nx.simple_cycles(graph)])
+
 
 @as_array
-def approx_stationary(mat, s0=None, tol=1e-6, iterlimit=10000):
+def approx_stationary(mat, s0=None, tol=1e-6, iterlimit=100000):
+    """Compute the approximate stationary distribution of a stochastic matrix,
+    by repeatedly multiplying a probability vector by the matrix until it
+    converges.
+    """
     assert(is_stochastic(mat,tol))
     if s0 is None:
         s0 = np.ones(len(mat))
@@ -193,9 +207,11 @@ def approx_stationary(mat, s0=None, tol=1e-6, iterlimit=10000):
     # Approximate the stationary distribution by repeated transitions
     s = np.copy(s0)
     for i in range(iterlimit):
+        # TODO: is normalization here correct?
         sp = np.dot(s, mat)
+        sp = sp/np.sum(np.abs(sp))
         if np.allclose(s, sp):
-            return s
+            return s#/np.sum(np.abs(s))
         s = sp
     else:
         raise Exception("Failed to converge within tolerance:", s, s0)

@@ -7,9 +7,12 @@ bumpversion
 coverage
 coveralls
 invoke
+networkx
+numpy
 pytest
 pytest-cov
 pytest-flakes
+scipy
 sphinx
 sphinxcontrib-napoleon
 wheel>=0.23.0

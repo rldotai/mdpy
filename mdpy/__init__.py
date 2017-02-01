@@ -3,16 +3,18 @@
 __version__ = '0.0.2'
 __author__ = 'rldotai <>'
 
-# define your imports here
+# importing modules
 from . import linalg
 from . import solve
 from . import util
 from . import discrete
 
+# setting up package namespace
 from .discrete import categorical, drv
 from .mdp import MarkovProcess
 from .linalg import *
 from .solve import *
+from .util import from_dict
 
 # define `__all__` for this package
 __all__ = []

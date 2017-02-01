@@ -6,6 +6,7 @@ import numpy as np
 import scipy.linalg
 import scipy.stats
 import mdpy
+from numbers import Number
 
 
 class categorical(scipy.stats._distn_infrastructure.rv_sample):
