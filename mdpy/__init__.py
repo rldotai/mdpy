@@ -4,10 +4,11 @@ __version__ = '0.1.0'
 __author__ = 'rldotai <>'
 
 # importing modules
+from . import discrete
+from . import empirical
 from . import linalg
 from . import solve
 from . import util
-from . import discrete
 
 # setting up package namespace
 from .discrete import categorical, drv

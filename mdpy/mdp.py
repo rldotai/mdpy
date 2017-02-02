@@ -39,7 +39,7 @@ class MarkovProcess:
 
     @property
     def states(self):
-        return np.arange(len(T))
+        return np.arange(len(self.T))
 
     def prob(self, s, sp=None):
         """Return the probability of the transition, or if `sp` is not given,
@@ -103,10 +103,13 @@ class MarkovProcess:
 
         # Set up and run the simulation
         ret = []
-        _s = s0
+        s = s0
         for t in range(n):
             sp, r = self.step(s)
             ret.append({'s': s, 'sp': sp, 'r': r})
+
+            # Set up for next iteration
+            s = sp
         return ret
 
 
