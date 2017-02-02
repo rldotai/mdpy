@@ -1,6 +1,6 @@
 # mdpy 
 
-Markov decision processes in Python
+Markov decision processes in Python.
 
 
 ## Features
