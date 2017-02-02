@@ -5,6 +5,12 @@ Markov decision processes in Python
 
 ## Features
 
+- Markov Decision Processes!
+- Analytic solutions!
+- Simulation!
+- Stochastic matrix algorithms!
+- Visualization!
+- Implementations of concepts specific to my research! 
 
 ## Install for development
 
