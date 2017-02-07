@@ -113,7 +113,6 @@ class MarkovProcess:
         return ret
 
 
-
 class ArrayMDP:
     """MDP class, formulated in terms of multi-arrays.
     It requires an two arrays, one for the transition probabilities (`T`) and
