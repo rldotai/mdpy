@@ -29,3 +29,26 @@ def from_dict(dct, shape, default=None):
     def func(key):
         return dct.get(key, default)
     return np.reshape([func(ix) for ix in np.ndindex(*shape)], shape)
+
+def as_diag(elem, n):
+    """Convert `elem` to a diagonal matrix"""
+    elem = np.squeeze(elem)
+    length = elem.size
+    ndim = elem.ndim
+    if ndim == 0:
+        return np.eye(n)*elem
+    elif ndim == 1:
+        if length == 1:
+            return np.eye(n)*elem
+        elif length != n:
+            raise ValueError("Cannot make `elem` diagonal: need length %d, \
+                got length %d"%(n, length))
+        else:
+            return np.diag(elem)
+    elif ndim == 2:
+        # Trust that it's already diagonal
+        return elem
+    else:
+        raise ValueError("Too many dimensions to make`elem` diagonal: need \
+            at most 2, got %d"%(ndim))
+

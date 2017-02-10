@@ -3,148 +3,13 @@ from functools import reduce
 from numbers import Number
 from numpy.linalg import det, pinv, matrix_rank, norm
 from . import linalg
-from .util import as_array
+from .util import as_array, as_diag
 
 
-@as_array
-def potential(A, tol=1e-6):
-    """Compute the potential matrix for `A`, which is the sum of the matrix
-    geometric series (also referred to as the "Neumann series".
+# TODO: Change assertions to exceptions
+# TODO: Add tests
+# TODO: Convert to new matrix multiplication operator
 
-        B = \sum_{k=0}^{\infty} A^k = (I - A)^{-1}
-
-    Parameters
-    ----------
-    A : Matrix[float]
-        A square matrix such that `(I - A)` is invertible.
-    """
-    assert(linalg.is_square(A))
-    assert(isinstance(tol, Number))
-    I = np.eye(len(A))
-    ret = np.linalg.inv(I - A)
-    ret[np.abs(ret) < tol] = 0 # zero values within tolerance
-    return ret
-
-def warp(P, Γ, Λ):
-    """
-    The matrix which warps the distribution due to gamma and lambda.
-    warp = (I - P_{\pi} \Gamma \Lambda)^{-1}
-
-
-    Parameters
-    ----------
-    P : Matrix[float]
-        The transition matrix, with `P[i,j]` defined as the probability of
-        transitioning to state `j` from state `i`.
-    Γ : Matrix[float]
-        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
-        entry is the discount applied to state `i`.
-        All entries should be in the interval [0, 1].
-    Λ : Matrix[float]
-        The state-dependent bootstrapping matrix, a diagonal matrix whose
-        (i,i)-th entry is the bootstrapping (λ value) for state `i`.
-        All entries should be in the interval [0, 1].
-
-    Notes
-    -----
-    The term "warp matrix" is non-standard terminology, but is somewhat
-    appropriate because it represents the asymptotic result of bootstrapping
-    and discounting in the MDP.
-    The i-th row-sum reflects the influence of the subsequent states on state
-    `i`, while the j-th column sum reflects the influence of state `j` on its
-    successors.
-    """
-    assert(linalg.is_stochastic(P))
-    assert(linalg.is_diagonal(Γ))
-    assert(linalg.is_diagonal(Λ))
-    return potential(P @ Γ @ Λ)
-
-
-def etd_weights(P, r, Γ, Λ, X, ivec):
-    """Compute the fixed-point of ETD(λ) by solving its Bellman equation.
-    The weight vector returned corresponds to the asymptotic weights for found
-    by Emphatic TD(λ).
-
-    Parameters
-    ----------
-    P : Matrix[float]
-        The transition matrix, with `P[i,j]` defined as the probability of
-        transitioning to state `j` from state `i`.
-    r : The expected reward vector.
-        Element `r[i]` is defined to be the expected reward over the
-        transitions from state `i`.
-    Γ : Matrix[float]
-        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
-        entry is the discount applied to state `i`.
-        All entries should be in the interval [0, 1].
-    Λ : Matrix[float]
-        The state-dependent bootstrapping matrix, a diagonal matrix whose
-        (i,i)-th entry is the bootstrapping (λ value) for state `i`.
-        All entries should be in the interval [0, 1].
-    X : Matrix
-        The feature matrix, whose rows correspond to the feature representation
-        for each state.
-        For example, `X[i]` provides the features for state `i`.
-    ivec : Vector[float]
-        The per-state "interest" vector.
-        For example, `ivec[i]` is the interest allocated to state `i`.
-    """
-    # compute intermediate quantities (could be more efficient)
-    assert(linalg.is_stochastic(P))
-    I = np.eye(len(P))
-    di = linalg.stationary(P) * ivec
-    m = pinv(I - Λ @ Γ @ P.T) @ (I - Γ @ P.T) @ di
-    M = np.diag(m)
-
-    # solve the equation
-    A = X.T @ M @ pinv(I - P @ Γ @ Λ) @ (I - P @ Γ) @ X
-    A_inv = np.linalg.pinv(A)
-    b = X.T @ M @ pinv(I - P @ Γ @ Λ) @ r
-    return np.dot(A_inv, b)
-
-
-def etd_values(P, r, Γ, Λ, X, ivec):
-    """Compute the state-values found by Emphatic TD(λ) by solving the
-    appropriate Bellman equation.
-
-    Parameters
-    ----------
-    P : Matrix[float]
-        The transition matrix, with `P[i,j]` defined as the probability of
-        transitioning to state `j` from state `i`.
-    r : The expected reward vector.
-        Element `r[i]` is defined to be the expected reward over the
-        transitions from state `i`.
-    Γ : Matrix[float]
-        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
-        entry is the discount applied to state `i`.
-        All entries should be in the interval [0, 1].
-    Λ : Matrix[float]
-        The state-dependent bootstrapping matrix, a diagonal matrix whose
-        (i,i)-th entry is the bootstrapping (λ value) for state `i`.
-        All entries should be in the interval [0, 1].
-    X : Matrix
-        The feature matrix, whose rows correspond to the feature representation
-        for each state.
-        For example, `X[i]` provides the features for state `i`.
-    ivec : Vector[float]
-        The per-state "interest" vector.
-        For example, `ivec[i]` is the interest allocated to state `i`.
-    """
-    # compute intermediate quantities (could be more efficient)
-    theta = etd_weights(P, Γ, Λ, X, ivec, r)
-    return np.dot(X, theta)
-
-def followon(P, G, di):
-    """Compute the followon trace's expected value for each state."""
-    assert(linalg.is_stochastic(P))
-    assert(linalg.is_diagonal(G))
-    I = np.eye(len(P))
-
-    return np.dot(np.linalg.inv(I - G @ P.T), di)
-
-
-# TODO: add tests
 # TODO: Allow specifying Γ as a vector, constant, or maybe even dict?
 def mc_return(P, r, Γ):
     """Compute the expected Monte-Carlo return for the Markov chain defined by
@@ -165,7 +30,9 @@ def mc_return(P, r, Γ):
         All entries should be in the interval [0, 1].
     """
     assert(linalg.is_stochastic(P))
-    I = np.eye(len(P))
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
+    I = np.eye(ns)
     return np.linalg.pinv(I - P @ Γ) @ r
 
 # TODO: Allow specifying Γ as a vector, constant, or maybe even dict?
@@ -192,6 +59,8 @@ def ls_weights(P, r, Γ, X):
     assert(linalg.is_stochastic(P))
     assert(X.ndim == 2)
     assert(len(X) == len(P))
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
     value = mc_return(P, r, Γ)
     dist  = linalg.stationary(P)
     D     = np.diag(dist)
@@ -218,6 +87,8 @@ def ls_values(P, r, Γ, X):
         for each state.
         For example, `X[i]` provides the features for state `i`.
     """
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
     weights = ls_weights(P, r, Γ, X)
     return X @ weights
 
@@ -257,11 +128,16 @@ def td_weights(P, r, Γ, Λ, X):
     assert(linalg.is_stochastic(P))
     assert(X.ndim == 2)
     assert(len(X) == len(P))
-    assert(linalg.is_diagonal(Γ))
-    assert(linalg.is_diagonal(Λ))
-    I    = np.eye(len(P))
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
+    Λ = as_diag(Λ, ns)
+
+    # Calculate intermediate quantities
+    I    = np.eye(ns)
     dist = linalg.stationary(P)
     D    = np.diag(dist)
+
+    # Set up and solve the equation
     r_lm = (I - P @ Γ @ Λ) @ r
     P_lm = I - pinv(I - P @ Γ @ Λ) @ (I - P @ Γ)
     A = X.T @ D @ (I - P_lm) @ X
@@ -333,13 +209,166 @@ def lambda_return(P, r, Γ, Λ, v_hat):
         G_{t}^{λ} = R_{t+1} + γ_{t+1}( (1-λ_{t+1}) v(S_{t+1}) + λ_{t+1}G_{t+1}^{λ}
     """
     assert(linalg.is_stochastic(P))
-    assert(linalg.is_diagonal(Γ))
-    assert(linalg.is_diagonal(Λ))
-    I = np.eye(len(P))
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
+    Λ = as_diag(Λ, ns)
+    I = np.eye(ns)
     # Incorporate next-state's value into expected reward
     r_hat = r + P @ Γ @ (I - Λ) @ v_hat
     # Solve the Bellman equation
     return np.linalg.pinv(I - P @ Γ @ Λ) @ r_hat
+
+
+def etd_weights(P, r, Γ, Λ, X, ivec):
+    """Compute the fixed-point of ETD(λ) by solving its Bellman equation.
+    The weight vector returned corresponds to the asymptotic weights for found
+    by Emphatic TD(λ).
+
+    Parameters
+    ----------
+    P : Matrix[float]
+        The transition matrix, with `P[i,j]` defined as the probability of
+        transitioning to state `j` from state `i`.
+    r : The expected reward vector.
+        Element `r[i]` is defined to be the expected reward over the
+        transitions from state `i`.
+    Γ : Matrix[float]
+        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+        entry is the discount applied to state `i`.
+        All entries should be in the interval [0, 1].
+    Λ : Matrix[float]
+        The state-dependent bootstrapping matrix, a diagonal matrix whose
+        (i,i)-th entry is the bootstrapping (λ value) for state `i`.
+        All entries should be in the interval [0, 1].
+    X : Matrix
+        The feature matrix, whose rows correspond to the feature representation
+        for each state.
+        For example, `X[i]` provides the features for state `i`.
+    ivec : Vector[float]
+        The per-state "interest" vector.
+        For example, `ivec[i]` is the interest allocated to state `i`.
+    """
+    assert(linalg.is_stochastic(P))
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
+    Λ = as_diag(Λ, ns)
+
+    # compute intermediate quantities (could be more efficient)
+    I = np.eye(ns)
+    di = linalg.stationary(P) * ivec
+    m = pinv(I - Λ @ Γ @ P.T) @ (I - Γ @ P.T) @ di
+    M = np.diag(m)
+
+    # solve the equation
+    A = X.T @ M @ pinv(I - P @ Γ @ Λ) @ (I - P @ Γ) @ X
+    A_inv = np.linalg.pinv(A)
+    b = X.T @ M @ pinv(I - P @ Γ @ Λ) @ r
+    return np.dot(A_inv, b)
+
+
+def etd_values(P, r, Γ, Λ, X, ivec):
+    """Compute the state-values found by Emphatic TD(λ) by solving the
+    appropriate Bellman equation.
+
+    Parameters
+    ----------
+    P : Matrix[float]
+        The transition matrix, with `P[i,j]` defined as the probability of
+        transitioning to state `j` from state `i`.
+    r : The expected reward vector.
+        Element `r[i]` is defined to be the expected reward over the
+        transitions from state `i`.
+    Γ : Matrix[float]
+        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+        entry is the discount applied to state `i`.
+        All entries should be in the interval [0, 1].
+    Λ : Matrix[float]
+        The state-dependent bootstrapping matrix, a diagonal matrix whose
+        (i,i)-th entry is the bootstrapping (λ value) for state `i`.
+        All entries should be in the interval [0, 1].
+    X : Matrix
+        The feature matrix, whose rows correspond to the feature representation
+        for each state.
+        For example, `X[i]` provides the features for state `i`.
+    ivec : Vector[float]
+        The per-state "interest" vector.
+        For example, `ivec[i]` is the interest allocated to state `i`.
+    """
+    # compute intermediate quantities (could be more efficient)
+    theta = etd_weights(P, Γ, Λ, X, ivec, r)
+    return np.dot(X, theta)
+
+
+def followon(P, Γ, ivec):
+    """Compute the followon trace's expected value for each state."""
+    assert(linalg.is_stochastic(P))
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
+
+    I = np.eye(ns)
+    di = linalg.stationary(P) * ivec
+    return np.dot(np.linalg.pinv(I - Γ @ P.T), di)
+
+
+@as_array
+def potential(A, tol=1e-6):
+    """Compute the potential matrix for `A`, which is the sum of the matrix
+    geometric series (also referred to as the "Neumann series".
+
+        B = \sum_{k=0}^{\infty} A^k = (I - A)^{-1}
+
+    Parameters
+    ----------
+    A : Matrix[float]
+        A square matrix such that `(I - A)` is invertible.
+    """
+    assert(linalg.is_square(A))
+    assert(isinstance(tol, Number))
+    I = np.eye(len(A))
+    ret = np.linalg.inv(I - A)
+    ret[np.abs(ret) < tol] = 0 # zero values within tolerance
+    return ret
+
+def warp(P, Γ, Λ):
+    """
+    The matrix which warps the distribution due to gamma and lambda.
+    warp = (I - P_{\pi} \Gamma \Lambda)^{-1}
+
+
+    Parameters
+    ----------
+    P : Matrix[float]
+        The transition matrix, with `P[i,j]` defined as the probability of
+        transitioning to state `j` from state `i`.
+    Γ : Matrix[float]
+        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+        entry is the discount applied to state `i`.
+        All entries should be in the interval [0, 1].
+    Λ : Matrix[float]
+        The state-dependent bootstrapping matrix, a diagonal matrix whose
+        (i,i)-th entry is the bootstrapping (λ value) for state `i`.
+        All entries should be in the interval [0, 1].
+
+    Notes
+    -----
+    The term "warp matrix" is non-standard terminology, but is somewhat
+    appropriate because it represents the asymptotic result of bootstrapping
+    and discounting in the MDP.
+    The i-th row-sum reflects the influence of the subsequent states on state
+    `i`, while the j-th column sum reflects the influence of state `j` on its
+    successors.
+    """
+    assert(linalg.is_stochastic(P))
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
+    Λ = as_diag(Λ, ns)
+    return potential(P @ Γ @ Λ)
+
+
+
+###############################################################################
+# Variance and Second Moment
+###############################################################################
 
 # TODO: Allow specifying Γ as a vector, constant, or maybe even dict?
 def sobel_variance(P, R, Γ):
@@ -369,9 +398,10 @@ def sobel_variance(P, R, Γ):
     """
     assert(linalg.is_stochastic(P))
     assert(P.shape == R.shape)
-    assert(linalg.is_diagonal(Γ))
     ns = len(P)
-    I = np.eye(len(P))
+    Γ = as_diag(Γ, ns)
+
+    I = np.eye(ns)
     r = (P * R) @ np.ones(ns)
     v_pi = mc_return(P, r, Γ)
 
@@ -412,9 +442,10 @@ def second_moment(P, R, Γ):
     """
     assert(linalg.is_stochastic(P))
     assert(P.shape == R.shape)
-    assert(linalg.is_diagonal(Γ))
     ns = len(P)
-    I = np.eye(len(P))
+    Γ = as_diag(Γ, ns)
+    I = np.eye(ns)
+
     # Compute expected state values
     r = (P*R) @ np.ones(ns)
     v_pi = mc_return(P, r, Γ)
@@ -477,10 +508,11 @@ def lambda_second_moment(P, R, Γ, Λ, v_hat):
     """
     assert(linalg.is_stochastic(P))
     assert(P.shape == R.shape)
-    assert(linalg.is_diagonal(Γ))
-    assert(linalg.is_diagonal(Λ))
     ns = len(P)
-    I = np.eye(len(P))
+    Γ = as_diag(Γ, ns)
+    Λ = as_diag(Λ, ns)
+
+    I = np.eye(ns)
     # Expected immediate reward
     r = (P * R) @ np.ones(ns)
     # Lambda return may be different from approximate lambda return
