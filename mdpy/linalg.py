@@ -234,6 +234,28 @@ def stationary(mat):
     return normalize(x)
 
 @as_array
+def stationary_matrix(mat):
+    """Return the matrix `A` where each row is the stationary distribution for
+    the given matrix `mat`.
+
+    Computes the stationary distribution for transition matrix `mat`, via
+    computing the solution to the system of equations (P.T - I)*\pi = 0.
+
+    NB: Assumes `mat` is ergodic (aperiodic and irreducible).
+    Could do with LU factorization -- c.f. 54-14 in Handbook of Linear Algebra
+    """
+    assert(is_stochastic(mat))
+    ns = len(mat)
+    P = (np.copy(mat).T - np.eye(ns))
+    P[-1,:] = 1
+    b = np.zeros(ns)
+    b[-1] = 1
+    x = np.linalg.solve(P, b)
+    d_pi = normalize(x)
+    return np.tile(d_pi, (ns, 1))
+
+
+@as_array
 def get_all_stationary(mat):
     """Compute /all/ stationary states for transition matrix `mat`, by
     finding the left eigenvectors with an associated eigenvalue of `1`.
@@ -263,3 +285,13 @@ def matrix_series(mat, n):
     for i in range(n):
         ret += mat @ ret
     return ret
+
+@as_array
+def matrix_power(mat, n):
+    """Compute the matrix `mat` raised to the power `n`."""
+    assert(is_square(mat))
+    ret = np.eye(len(mat))
+    for i in range(n):
+        ret = ret @ mat
+    return ret
+
