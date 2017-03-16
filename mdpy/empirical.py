@@ -2,6 +2,7 @@
 Code for simulating MDPs and analyzing the results.
 """
 import numpy as np
+from collections import defaultdict
 
 
 def calculate_return(rewards, gamma):
@@ -50,3 +51,64 @@ def calculate_squared_return(rewards, gammas, returns):
         G_next = G
     ret.reverse()
     return ret
+
+def empirical_transitions(obslst):
+    """Approximate the empirical transition matrix from a list of observed
+    states.
+
+    We assume the observations are in order, and that each observation is a
+    hashable and sortable object.
+    """
+    dct = defaultdict(lambda: defaultdict(int))
+    obslst = iter(obslst)
+    obs = next(obslst)
+    for obs_p in obslst:
+        dct[obs][obs_p] += 1
+        obs = obs_p
+
+    # Get all states seen (including terminals/initial states)
+    states = set(dct.keys()) | set([s for v in dct.values() for s in v])
+    states = sorted(states)
+    ns = len(states)
+    ret = np.zeros((ns, ns))
+    for ix, s in enumerate(states):
+        for jx, sp in enumerate(states):
+            ret[ix][jx] = dct[s][sp]
+
+    # Normalize
+    ret = (ret.T/ret.sum(axis=1)).T
+    return ret
+
+def empirical_rewards(obslst, rlst):
+    """Approximate the empirical reward matrix from a list of observed
+    states.
+
+    We assume the observations are in order, and that each observation is a
+    hashable and sortable object.
+    """
+    dct  = defaultdict(lambda: defaultdict(int))
+    rdct = defaultdict(lambda: defaultdict(float))
+    obslst = iter(obslst)
+    rlst = iter(rlst)
+
+    # Initial state
+    obs = next(obslst)
+    for obs_p, rwd in zip(obslst, rlst):
+        dct[obs][obs_p] += 1
+        rdct[obs][obs_p] += rwd
+        obs = obs_p
+
+    # Get all states seen (including terminals/initial states)
+    states = set(dct.keys()) | set([s for v in dct.values() for s in v])
+    states = sorted(states)
+    ns = len(states)
+    ret = np.zeros((ns, ns))
+
+    # Compute total rewards / number of transitions
+    for ix, s in enumerate(states):
+        for jx, sp in enumerate(states):
+            count = dct[s][sp]
+            ret[ix][jx] = 0 if count == 0 else rdct[s][sp]/count
+
+    return ret
+

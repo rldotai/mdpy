@@ -138,7 +138,7 @@ def td_weights(P, r, Γ, Λ, X):
     D    = np.diag(dist)
 
     # Set up and solve the equation
-    r_lm = (I - P @ Γ @ Λ) @ r
+    r_lm = pinv(I - P @ Γ @ Λ) @ r
     P_lm = I - pinv(I - P @ Γ @ Λ) @ (I - P @ Γ)
     A = X.T @ D @ (I - P_lm) @ X
     b = X.T @ D @ r_lm
@@ -172,6 +172,34 @@ def td_values(P, r, Γ, Λ, X):
         For example, `X[i]` provides the features for state `i`.
     """
     return X @ td_weights(P, r, Γ, Λ, X)
+
+def delta_matrix(R, Γ, v):
+    """Returns the matrix whose (i,j)-th entry represents the expected TD-error
+    for transitioning to state `j` from state `i`.
+    """
+    assert(linalg.is_square(R))
+    ns = len(R)
+    Γ = as_diag(Γ, ns)
+    ret = np.zeros((ns, ns))
+    for i, j in np.ndindex(*ret.shape):
+        ret[i,j] = R[i,j] + Γ[j,j]*v[j] - v[i]
+    return ret
+
+def expected_delta(P, R, Γ, v):
+    """The expected TD-error given transitions `P`, reward matrix `R`,
+    discount matrix `Γ`, and values `v`.
+    """
+    assert(linalg.is_stochastic(P))
+    Δ = delta_matrix(R, Γ, v)
+    return (P*Δ).sum(axis=1)
+
+def expected_reward(P, R):
+    """Expected immediate reward given transition matrix `P` and
+    expected reward matrix `R`.
+    """
+    assert(linalg.is_stochastic(P))
+    assert(P.shape == R.shape)
+    return np.multiply(P,R).sum(axis=1)
 
 # TODO: Allow specifying Γ, Λ, as a vector, constant, or maybe even dict?
 def lambda_return(P, r, Γ, Λ, v_hat):

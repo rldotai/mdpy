@@ -56,6 +56,21 @@ def normalize(array, axis=None):
     else:
         return _normalize(array)
 
+def random_binary(num_states, num_features, num_active):
+    """Create a matrix of random binary features, with `num_states` rows and
+    `num_features` columns, each row having `num_active` entries equal to one
+    and the rest equal to zero.
+    """
+    ixs = np.arange(num_features)
+    ret = []
+    for i in range(num_states):
+        active = np.random.choice(ixs, num_active, replace=False)
+        fvec = np.zeros(num_features)
+        fvec[active] = 1
+        ret.append(fvec)
+    return np.array(ret)
+
+
 # Vector properties
 @as_array
 def is_pvec(pvec, tol=1e-6):
