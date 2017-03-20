@@ -61,7 +61,7 @@ setup(
     # What does your project relate to? Separate with spaces.
     keywords='mdpy development',
     license='MIT',
-    version='0.1.0',
+    version='0.1.1',
 
     # The project's main homepage
     url='https://gitlab.com/rldotai/mdpy',
