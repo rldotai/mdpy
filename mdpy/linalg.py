@@ -56,6 +56,16 @@ def normalize(array, axis=None):
     else:
         return _normalize(array)
 
+@as_array
+def as_stochastic(mat):
+    mat = np.squeeze(mat)
+    if not is_square(mat):
+        raise Exception("Stochastic matrices must be square.")
+    if not is_nonnegative(mat):
+        raise Exception("Stochastic matrices must have all nonnegative entries")
+    return normalize(mat, axis=1)
+
+
 def random_binary(num_states, num_features, num_active):
     """Create a matrix of random binary features, with `num_states` rows and
     `num_features` columns, each row having `num_active` entries equal to one
@@ -175,17 +185,13 @@ def is_substochastic(mat, tol=1e-6):
 @as_array
 def find_terminals(mat):
     """Find terminal states in a transition matrix."""
-    return [row for ix, row in enumerate(mat) if row[ix] == 1]
+
+    return [ix for ix, row in enumerate(mat) if row[ix] == 1]
 
 @as_array
 def find_nonterminals(mat):
     """Find nonterminal states in a transition matrix."""
-    return [row for ix, row in enumerate(mat) if row[ix] != 1]
-
-@as_array
-def find_terminal_indices(mat):
-    """Find indices of terminal (absorbing) states in a transition matrix."""
-    return [ix for ix, row in enumerate(mat) if row[ix] == 1]
+    return [ix for ix, row in enumerate(mat) if row[ix] != 1]
 
 @as_array
 def get_period(mat):
