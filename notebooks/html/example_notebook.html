@@ -29,7 +29,9 @@
 
 
 <div class="output_area">
+
 <div class="prompt"></div>
+
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>The autoreload extension is already loaded. To reload it, use:
@@ -42,8 +44,7 @@
 </div>
 
 </div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -59,8 +60,7 @@ But if your environment is discrete and Markovian, it's <em>straightforward to s
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -107,8 +107,7 @@ $P_{ij}$ defines the probability of transitioning from state $i$ to state $j$, w
 </div>
 
 </div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -124,8 +123,7 @@ The MC defined above has a fairly simple structure:</p>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -155,7 +153,7 @@ In fact, it turns out that there's a group of people calling themselves "mathema
         <span class="n">mdpy</span><span class="o">.</span><span class="n">is_stochastic</span><span class="p">,</span>
         <span class="n">mdpy</span><span class="o">.</span><span class="n">is_substochastic</span><span class="p">,</span>
     <span class="p">]</span>
-    <span class="k">return</span> <span class="p">{</span><span class="n">f</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="n">f</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">}</span> 
+    <span class="k">return</span> <span class="p">{</span><span class="n">f</span><span class="o">.</span><span class="n">__name__</span><span class="p">:</span> <span class="n">f</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">}</span> 
 </pre></div>
 
 </div>
@@ -183,7 +181,9 @@ In fact, it turns out that there's a group of people calling themselves "mathema
 
 
 <div class="output_area">
+
 <div class="prompt"></div>
+
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>is_aperiodic         True                
@@ -204,8 +204,7 @@ is_square            True
 </div>
 
 </div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -215,7 +214,7 @@ Since this isn't quantum mechanics, negative probabilities make no sense, so it 
 As it is, the probabilities of each row should sum to one (making it a <strong>stochastic</strong> matrix).</p>
 <p>To be the transition matrix of a true Markov chain, we need two slightly more complicated properties:
 the matrix must <strong>aperiodic</strong> and <strong>irreducible</strong>.
-To be aperiodic, we require that the chain can't leave a state and then return to it only in multiples of $n$ steps, with $n > 1$.
+To be aperiodic, we require that the chain can't leave a state and then return to it only in multiples of $n$ steps, with $n &gt; 1$.
 In order to be irreducible the chain can't get "cut off" from other states-- there should always be a sequence of possible transitions taking it from state $i$ to state $j$ for <em>every</em> $i$ and $j$.</p>
 <hr>
 <p>There are some other things we might wish to learn about our transition matrix.</p>
@@ -242,8 +241,7 @@ Obviously we can't know for sure (unless there's a terminal state, but again, we
 </div>
 
 </div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -298,7 +296,9 @@ Obviously we can't know for sure (unless there's a terminal state, but again, we
 
 
 <div class="output_area">
+
 <div class="prompt"></div>
+
 
 
 
@@ -691,8 +691,7 @@ ASjcytNNn4YQAAAAAElFTkSuQmCC
 </div>
 
 </div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -723,7 +722,9 @@ If you care about all future rewards equally, γ should be 1; if you care only a
 
 
 <div class="output_area">
+
 <div class="prompt"></div>
+
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>[ 6.4466597   8.16295522  6.16295522  7.95883913  6.80199373]
@@ -735,8 +736,7 @@ If you care about all future rewards equally, γ should be 1; if you care only a
 </div>
 
 </div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -772,7 +772,9 @@ If you care about all future rewards equally, γ should be 1; if you care only a
 
 
 <div class="output_area">
+
 <div class="prompt output_prompt">Out[9]:</div>
+
 
 
 
@@ -803,7 +805,9 @@ If you care about all future rewards equally, γ should be 1; if you care only a
 
 
 <div class="output_area">
+
 <div class="prompt output_prompt">Out[10]:</div>
+
 
 
 
@@ -839,7 +843,9 @@ If you care about all future rewards equally, γ should be 1; if you care only a
 
 
 <div class="output_area">
+
 <div class="prompt"></div>
+
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>[ 6.4466597   8.16295522  6.16295522  0.          6.80199373]
@@ -851,8 +857,7 @@ If you care about all future rewards equally, γ should be 1; if you care only a
 </div>
 
 </div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -903,7 +908,9 @@ If you care about all future rewards equally, γ should be 1; if you care only a
 
 
 <div class="output_area">
+
 <div class="prompt"></div>
+
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>[  4.99600361e-16   1.00000000e+00  -1.00000000e+00   0.00000000e+00
@@ -958,7 +965,9 @@ If you care about all future rewards equally, γ should be 1; if you care only a
 
 
 <div class="output_area">
+
 <div class="prompt"></div>
+
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>12.6686240753
@@ -1016,7 +1025,9 @@ If you care about all future rewards equally, γ should be 1; if you care only a
 
 
 <div class="output_area">
+
 <div class="prompt output_prompt">Out[19]:</div>
+
 
 
 
@@ -1048,7 +1059,9 @@ If you care about all future rewards equally, γ should be 1; if you care only a
 
 
 <div class="output_area">
+
 <div class="prompt output_prompt">Out[20]:</div>
+
 
 
 
@@ -1062,8 +1075,7 @@ If you care about all future rewards equally, γ should be 1; if you care only a
 </div>
 
 </div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -1089,7 +1101,9 @@ If you care about all future rewards equally, γ should be 1; if you care only a
 
 
 <div class="output_area">
+
 <div class="prompt output_prompt">Out[21]:</div>
+
 
 
 
@@ -1120,7 +1134,9 @@ If you care about all future rewards equally, γ should be 1; if you care only a
 
 
 <div class="output_area">
+
 <div class="prompt output_prompt">Out[22]:</div>
+
 
 
 
@@ -1151,7 +1167,9 @@ If you care about all future rewards equally, γ should be 1; if you care only a
 
 
 <div class="output_area">
+
 <div class="prompt output_prompt">Out[23]:</div>
+
 
 
 
@@ -1182,7 +1200,9 @@ If you care about all future rewards equally, γ should be 1; if you care only a
 
 
 <div class="output_area">
+
 <div class="prompt output_prompt">Out[24]:</div>
+
 
 
 
