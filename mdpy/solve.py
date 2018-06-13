@@ -555,7 +555,7 @@ def lambda_second_moment(P, R, Γ, Λ, v_hat):
     for i in range(ns):
         for j in range(ns):
             R_bar[i,j] = R[i,j]**2 \
-                + (γ[j] * (1-λ[j])*v_lm[j])**2 \
+                + ( γ[j] * (1-λ[j]) * v_hat[j] )**2 \
                 + 2*( γ[j] * (1 - λ[j]) * R[i,j] * v_hat[j] ) \
                 + 2*( γ[j] * λ[j] * R[i,j] * v_lm[j]) \
                 + 2*( (γ[j]**2)*λ[j]*(1-λ[j]) * (v_hat[j]*v_lm[j]) )
