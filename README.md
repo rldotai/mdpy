@@ -15,7 +15,7 @@ Markov decision processes in Python.
 ## Install for development
 
 ```bash
-git clone https://gitlab.com/rldotai/mdpy.git
+git clone https://github.com/rldotai/mdpy.git
 cd mdpy
 pip install --editable .
 ```
