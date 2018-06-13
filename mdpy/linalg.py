@@ -179,6 +179,7 @@ def is_substochastic(mat, tol=1e-6):
     return (mat.ndim == 2) \
     and (mat.shape[0] == mat.shape[1]) \
     and (np.all([row >= 0 for row in mat])) \
+    and (all(np.sum(row) <= 1+tol for row in mat))
 
 ## Information about MDPs utilities
 
