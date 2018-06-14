@@ -657,6 +657,7 @@ def projected_bellman_error(P, R, Γ, X, v):
     """Projected Bellman error."""
     assert linalg.is_ergodic(P)
     assert P.shape == R.shape
+    r = (P * R).sum(axis=1)
     d_pi = linalg.stationary(P)
     D = np.diag(d_pi)
     proj = X @ np.linalg.pinv(X.T @ D @ X) @ X.T @ D
