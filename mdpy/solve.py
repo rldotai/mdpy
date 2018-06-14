@@ -29,11 +29,12 @@ def mc_return(P, r, Γ):
         entry is the discount applied to state `i`.
         All entries should be in the interval [0, 1].
     """
-    assert(linalg.is_stochastic(P))
+    assert linalg.is_stochastic(P)
     ns = len(P)
     Γ = as_diag(Γ, ns)
     I = np.eye(ns)
     return np.linalg.pinv(I - P @ Γ) @ r
+
 
 # TODO: Allow specifying Γ as a vector, constant, or maybe even dict?
 def ls_weights(P, r, Γ, X):
@@ -56,15 +57,16 @@ def ls_weights(P, r, Γ, X):
         for each state.
         For example, `X[i]` provides the features for state `i`.
     """
-    assert(linalg.is_stochastic(P))
-    assert(X.ndim == 2)
-    assert(len(X) == len(P))
+    assert linalg.is_stochastic(P)
+    assert X.ndim == 2
+    assert len(X) == len(P)
     ns = len(P)
     Γ = as_diag(Γ, ns)
     value = mc_return(P, r, Γ)
-    dist  = linalg.stationary(P)
-    D     = np.diag(dist)
+    dist = linalg.stationary(P)
+    D = np.diag(dist)
     return np.linalg.pinv(X.T @ D @ X) @ X.T @ D @ value
+
 
 # TODO: Allow specifying Γ as a vector, constant, or maybe even dict?
 def ls_values(P, r, Γ, X):
@@ -91,6 +93,7 @@ def ls_values(P, r, Γ, X):
     Γ = as_diag(Γ, ns)
     weights = ls_weights(P, r, Γ, X)
     return X @ weights
+
 
 # TODO: Allow specifying Γ, Λ, as a vector, constant, or maybe even dict?
 def td_weights(P, r, Γ, Λ, X):
@@ -125,17 +128,17 @@ def td_weights(P, r, Γ, Λ, X):
     If `Λ = diag([1, 1, ..., 1])`, then the result should be the same as
     computing the weights under least-squares.
     """
-    assert(linalg.is_stochastic(P))
-    assert(X.ndim == 2)
-    assert(len(X) == len(P))
+    assert linalg.is_stochastic(P)
+    assert X.ndim == 2
+    assert len(X) == len(P)
     ns = len(P)
     Γ = as_diag(Γ, ns)
     Λ = as_diag(Λ, ns)
 
     # Calculate intermediate quantities
-    I    = np.eye(ns)
+    I = np.eye(ns)
     dist = linalg.stationary(P)
-    D    = np.diag(dist)
+    D = np.diag(dist)
 
     # Set up and solve the equation
     r_lm = pinv(I - P @ Γ @ Λ) @ r
@@ -143,6 +146,7 @@ def td_weights(P, r, Γ, Λ, X):
     A = X.T @ D @ (I - P_lm) @ X
     b = X.T @ D @ r_lm
     return np.linalg.pinv(A) @ b
+
 
 # TODO: Allow specifying Γ, Λ, as a vector, constant, or maybe even dict?
 def td_values(P, r, Γ, Λ, X):
@@ -173,6 +177,7 @@ def td_values(P, r, Γ, Λ, X):
     """
     return X @ td_weights(P, r, Γ, Λ, X)
 
+
 def delta_matrix(R, Γ, v):
     """Returns the matrix whose (i,j)-th entry represents the expected TD-error
     for transitioning to state `j` from state `i`.
@@ -199,13 +204,14 @@ def delta_matrix(R, Γ, v):
         `(R_{t+1} + γ_t+1 v(S_{t+1}) - v(S_{t})` given that state `S_{t} = i`,
         and state `S_{t+1} = j`
     """
-    assert(linalg.is_square(R))
+    assert linalg.is_square(R)
     ns = len(R)
     Γ = as_diag(Γ, ns)
     ret = np.zeros((ns, ns))
     for i, j in np.ndindex(*ret.shape):
-        ret[i,j] = R[i,j] + Γ[j,j]*v[j] - v[i]
+        ret[i, j] = R[i, j] + Γ[j, j] * v[j] - v[i]
     return ret
+
 
 def expected_delta(P, R, Γ, v):
     """The expected TD-error given transitions `P`, reward matrix `R`,
@@ -232,17 +238,19 @@ def expected_delta(P, R, Γ, v):
         The expected TD-error vector, with `δ[i]` the expected value of
         `(R_{t+1} + γ_t+1 v(S_{t+1}) - v(S_{t})` given that state `S_{t} = i`.
     """
-    assert(linalg.is_stochastic(P))
+    assert linalg.is_stochastic(P)
     Δ = delta_matrix(R, Γ, v)
-    return (P*Δ).sum(axis=1)
+    return (P * Δ).sum(axis=1)
+
 
 def expected_reward(P, R):
     """Expected immediate reward given transition matrix `P` and
     expected reward matrix `R`.
     """
-    assert(linalg.is_stochastic(P))
-    assert(P.shape == R.shape)
-    return np.multiply(P,R).sum(axis=1)
+    assert linalg.is_stochastic(P)
+    assert P.shape == R.shape
+    return np.multiply(P, R).sum(axis=1)
+
 
 # TODO: Allow specifying Γ, Λ, as a vector, constant, or maybe even dict?
 def lambda_return(P, r, Γ, Λ, v_hat):
@@ -279,7 +287,7 @@ def lambda_return(P, r, Γ, Λ, v_hat):
 
         G_{t}^{λ} = R_{t+1} + γ_{t+1}( (1-λ_{t+1}) v(S_{t+1}) + λ_{t+1}G_{t+1}^{λ}
     """
-    assert(linalg.is_stochastic(P))
+    assert linalg.is_stochastic(P)
     ns = len(P)
     Γ = as_diag(Γ, ns)
     Λ = as_diag(Λ, ns)
@@ -319,7 +327,7 @@ def etd_weights(P, r, Γ, Λ, X, ivec):
         The per-state "interest" vector.
         For example, `ivec[i]` is the interest allocated to state `i`.
     """
-    assert(linalg.is_stochastic(P))
+    assert linalg.is_stochastic(P)
     ns = len(P)
     Γ = as_diag(Γ, ns)
     Λ = as_diag(Λ, ns)
@@ -372,7 +380,7 @@ def etd_values(P, r, Γ, Λ, X, ivec):
 
 def followon(P, Γ, ivec):
     """Compute the followon trace's expected value for each state."""
-    assert(linalg.is_stochastic(P))
+    assert linalg.is_stochastic(P)
     ns = len(P)
     Γ = as_diag(Γ, ns)
 
@@ -393,12 +401,13 @@ def potential(A, tol=1e-6):
     A : Matrix[float]
         A square matrix such that `(I - A)` is invertible.
     """
-    assert(linalg.is_square(A))
-    assert(isinstance(tol, Number))
+    assert linalg.is_square(A)
+    assert isinstance(tol, Number)
     I = np.eye(len(A))
     ret = np.linalg.inv(I - A)
-    ret[np.abs(ret) < tol] = 0 # zero values within tolerance
+    ret[np.abs(ret) < tol] = 0  # zero values within tolerance
     return ret
+
 
 def warp(P, Γ, Λ):
     """
@@ -429,12 +438,11 @@ def warp(P, Γ, Λ):
     `i`, while the j-th column sum reflects the influence of state `j` on its
     successors.
     """
-    assert(linalg.is_stochastic(P))
+    assert linalg.is_stochastic(P)
     ns = len(P)
     Γ = as_diag(Γ, ns)
     Λ = as_diag(Λ, ns)
     return potential(P @ Γ @ Λ)
-
 
 
 ###############################################################################
@@ -467,8 +475,8 @@ def sobel_variance(P, R, Γ):
     R, but I would prefer to handle it via something more generic like numpy's
     `einsum`.
     """
-    assert(linalg.is_stochastic(P))
-    assert(P.shape == R.shape)
+    assert linalg.is_stochastic(P)
+    assert P.shape == R.shape
     ns = len(P)
     Γ = as_diag(Γ, ns)
 
@@ -477,12 +485,13 @@ def sobel_variance(P, R, Γ):
     v_pi = mc_return(P, r, Γ)
 
     # Set up Bellman equation
-    q = -v_pi**2
+    q = -v_pi ** 2
     for i in range(ns):
         for j in range(ns):
-            q[i] += P[i,j]*(R[i,j] + Γ[j,j]*v_pi[j])**2
+            q[i] += P[i, j] * (R[i, j] + Γ[j, j] * v_pi[j]) ** 2
     # Solve Bellman equation
     return np.linalg.pinv(I - P @ Γ @ Γ) @ q
+
 
 # TODO: Allow specifying Γ as a vector, constant, or maybe even dict?
 def second_moment(P, R, Γ):
@@ -511,14 +520,14 @@ def second_moment(P, R, Γ):
     R, but I would prefer to handle it via something more generic like numpy's
     `einsum`.
     """
-    assert(linalg.is_stochastic(P))
-    assert(P.shape == R.shape)
+    assert linalg.is_stochastic(P)
+    assert P.shape == R.shape
     ns = len(P)
     Γ = as_diag(Γ, ns)
     I = np.eye(ns)
 
     # Compute expected state values
-    r = (P*R) @ np.ones(ns)
+    r = (P * R) @ np.ones(ns)
     v_pi = mc_return(P, r, Γ)
     γ = np.diag(Γ)
 
@@ -526,12 +535,13 @@ def second_moment(P, R, Γ):
     R_bar = np.zeros((ns, ns))
     for i in range(ns):
         for j in range(ns):
-            R_bar[i,j] = R[i,j]**2 + 2*( γ[j] * R[i,j] * v_pi[j])
+            R_bar[i, j] = R[i, j] ** 2 + 2 * (γ[j] * R[i, j] * v_pi[j])
     # Set up Bellman equation for second moment
     r_bar = (P * R_bar) @ np.ones(ns)
 
     # Solve the Bellman equation
     return np.linalg.pinv(I - P @ Γ @ Γ) @ r_bar
+
 
 # TODO: Allow specifying Γ, Λ, as a vector, constant, or maybe even dict?
 def lambda_second_moment(P, R, Γ, Λ, v_hat):
@@ -577,8 +587,8 @@ def lambda_second_moment(P, R, Γ, Λ, v_hat):
     R, but I would prefer to handle it via something more generic like numpy's
     `einsum`.
     """
-    assert(linalg.is_stochastic(P))
-    assert(P.shape == R.shape)
+    assert linalg.is_stochastic(P)
+    assert P.shape == R.shape
     ns = len(P)
     Γ = as_diag(Γ, ns)
     Λ = as_diag(Λ, ns)
@@ -597,66 +607,73 @@ def lambda_second_moment(P, R, Γ, Λ, v_hat):
     R_bar = np.zeros((ns, ns))
     for i in range(ns):
         for j in range(ns):
-            R_bar[i,j] = R[i,j]**2 \
-                + ( γ[j] * (1-λ[j]) * v_hat[j] )**2 \
-                + 2*( γ[j] * (1 - λ[j]) * R[i,j] * v_hat[j] ) \
-                + 2*( γ[j] * λ[j] * R[i,j] * v_lm[j]) \
-                + 2*( (γ[j]**2)*λ[j]*(1-λ[j]) * (v_hat[j]*v_lm[j]) )
+            R_bar[i, j] = (
+                R[i, j] ** 2
+                + (γ[j] * (1 - λ[j]) * v_hat[j]) ** 2
+                + 2 * (γ[j] * (1 - λ[j]) * R[i, j] * v_hat[j])
+                + 2 * (γ[j] * λ[j] * R[i, j] * v_lm[j])
+                + 2 * ((γ[j] ** 2) * λ[j] * (1 - λ[j]) * (v_hat[j] * v_lm[j]))
+            )
     # Set up Bellman equation for second moment
     r_bar = (P * R_bar) @ np.ones(ns)
 
     # Solve the Bellman equation
     return pinv(I - P @ Γ @ Γ @ Λ @ Λ) @ r_bar
 
+
 ###############################################################################
 # Objective/Error Functions
 ###############################################################################
 
+
 def square_error(P, R, Γ, v):
     """Square error (SE)."""
     bias = value_error(P, R, Γ, v)
-    variance  = sobel_variance(P, R, Γ)
-    return variance + bias**2
+    variance = sobel_variance(P, R, Γ)
+    return variance + bias ** 2
+
 
 def value_error(P, R, Γ, v):
     """Value error (VE)."""
-    assert(linalg.is_ergodic(P))
-    r = (P*R).sum(axis=1)
+    assert linalg.is_ergodic(P)
+    r = (P * R).sum(axis=1)
     v_pi = mc_return(P, r, Γ)
-    return (v_pi - v)
+    return v_pi - v
+
 
 def bellman_error(P, R, Γ, v):
     """Bellman error (BE)."""
-    assert(linalg.is_stochastic(P))
-    assert(P.shape == R.shape)
+    assert linalg.is_stochastic(P)
+    assert P.shape == R.shape
     ns = len(P)
     Γ = as_diag(Γ, ns)
     Δ = delta_matrix(R, Γ, v)
     return (P * Δ) @ np.ones(ns)
 
+
 # The math makes sense specifying a non-representable value function, but is
 # this liable to surprise the user?
 def projected_bellman_error(P, R, Γ, X, v):
     """Projected Bellman error."""
-    assert(linalg.is_ergodic(P))
-    assert(P.shape == R.shape)
+    assert linalg.is_ergodic(P)
+    assert P.shape == R.shape
     d_pi = linalg.stationary(P)
     D = np.diag(d_pi)
     proj = X @ np.linalg.pinv(X.T @ D @ X) @ X.T @ D
 
     # Bellman operator
     Tv = r + P @ Γ @ v
-    return (v - proj @ Tv)
+    return v - proj @ Tv
 
 
 def square_td_error(P, R, Γ, v):
     """Squared temporal difference error (STDE)."""
-    assert(linalg.is_stochastic(P))
-    assert(P.shape == R.shape)
+    assert linalg.is_stochastic(P)
+    assert P.shape == R.shape
     ns = len(P)
     Γ = as_diag(Γ, ns)
     Δ = delta_matrix(R, Γ, v)
-    return (P * Δ**2) @ np.ones(ns)
+    return (P * Δ ** 2) @ np.ones(ns)
 
 
 def expected_update(P, R, Γ, X, v=None):
@@ -664,42 +681,48 @@ def expected_update(P, R, Γ, X, v=None):
     δ = expected_delta(P, R, Γ, v)
     return X @ δ
 
+
 # Weighted/normed versions of the errors
 def mse(P, R, Γ, v):
     """Mean-squared error (MSE)."""
-    assert(linalg.is_ergodic(P))
+    assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
-    return np.mean(d_pi*square_error(P, R, Γ, v))
+    return np.mean(d_pi * square_error(P, R, Γ, v))
+
 
 def msve(P, R, Γ, v):
     """Mean-squared value error (MSVE)."""
-    assert(linalg.is_ergodic(P))
+    assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
-    return np.mean(d_pi * value_error(P, R, Γ, v)**2)
+    return np.mean(d_pi * value_error(P, R, Γ, v) ** 2)
+
 
 def msbe(P, R, Γ, v):
     """Mean squared Bellman error (MSBE)."""
-    assert(linalg.is_ergodic(P))
+    assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
-    return np.mean(d_pi * bellman_error(P, R, Γ, v)**2)
+    return np.mean(d_pi * bellman_error(P, R, Γ, v) ** 2)
+
 
 def mspbe(P, R, Γ, Λ, X, v):
     """Mean squared projected Bellman error (MSPBE)."""
-    assert(linalg.is_ergodic(P))
+    assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
-    return np.mean(d_pi * bellman_error(P, R, Γ, v)**2)
+    return np.mean(d_pi * bellman_error(P, R, Γ, v) ** 2)
+
 
 def mstde(P, R, Γ, Λ, X, v):
     """Mean squared temporal difference error (MSTDE)."""
-    assert(linalg.is_ergodic(P))
+    assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
     return np.mean(d_pi * square_td_error(P, R, Γ, v))
+
 
 def neu(P, R, Γ, Λ, X, v):
     """Norm of the expected update (NEU).
 
     NEU(v) = 0 is the fixed-point of TD learning.
     """
-    assert(linalg.is_ergodic(P))
+    assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
-    return np.mean(d_pi * expected_update(P, R, Γ, X, v)**2)
+    return np.mean(d_pi * expected_update(P, R, Γ, X, v) ** 2)
