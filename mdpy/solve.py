@@ -651,8 +651,6 @@ def bellman_error(P, R, Γ, v):
     return (P * Δ) @ np.ones(ns)
 
 
-# The math makes sense specifying a non-representable value function, but is
-# this liable to surprise the user?
 def projected_bellman_error(P, R, Γ, X, v):
     """Projected Bellman error."""
     assert linalg.is_ergodic(P)
@@ -677,13 +675,15 @@ def square_td_error(P, R, Γ, v):
     return (P * Δ ** 2) @ np.ones(ns)
 
 
-def expected_update(P, R, Γ, X, v=None):
+def expected_update(P, R, Γ, X, v):
     """Expected update."""
     δ = expected_delta(P, R, Γ, v)
     return X @ δ
 
-
+# -----------------------------------------------------------------------------
 # Weighted/normed versions of the errors
+# -----------------------------------------------------------------------------
+
 def mse(P, R, Γ, v):
     """Mean-squared error (MSE)."""
     assert linalg.is_ergodic(P)
