@@ -677,8 +677,12 @@ def square_td_error(P, R, Γ, v):
 
 def expected_update(P, R, Γ, X, v):
     """Expected update."""
+    assert linalg.is_stochastic(P)
+    assert P.shape == R.shape
+    d_pi = linalg.stationary(P)
+    D = np.diag(d_pi)
     δ = expected_delta(P, R, Γ, v)
-    return X.T @ δ
+    return X.T @ D @ δ
 
 # -----------------------------------------------------------------------------
 # Weighted/normed versions of the errors
@@ -726,4 +730,4 @@ def neu(P, R, Γ, X, v):
     """
     assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
-    return np.mean(d_pi * expected_update(P, R, Γ, X, v) ** 2)
+    return np.mean(expected_update(P, R, Γ, X, v) ** 2)
