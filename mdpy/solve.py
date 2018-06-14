@@ -719,10 +719,10 @@ def mstde(P, R, Γ, v):
     return np.mean(d_pi * square_td_error(P, R, Γ, v))
 
 
-def neu(P, R, Γ, Λ, X, v):
+def neu(P, R, Γ, X, v):
     """Norm of the expected update (NEU).
 
-    NEU(v) = 0 is the fixed-point of TD learning.
+    NEU(v) = 0 is the fixed-point of TD(0).
     """
     assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
