@@ -176,6 +176,28 @@ def td_values(P, r, Γ, Λ, X):
 def delta_matrix(R, Γ, v):
     """Returns the matrix whose (i,j)-th entry represents the expected TD-error
     for transitioning to state `j` from state `i`.
+
+    Parameters
+    ----------
+    P : Matrix[float]
+        The transition matrix, with `P[i,j]` defined as the probability of
+        transitioning to state `j` from state `i`.
+    R : Matrix[float]
+        The reward matrix, with `R[i,j]` the expected reward for transitioning
+        to state `j` from state `i`.
+    Γ : Matrix[float]
+        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+        entry is the discount applied to state `i`.
+        All entries should be in the interval [0, 1].
+    v : The value approximate function, with `v[i]` the value assigned to state
+        `i`. If `v` is the true value function, the expected TD-error will be 0.
+
+    Returns
+    -------
+    Δ : Matrix[float]
+        The expected TD-error matrix, with `Δ[i,j]` the expected value of
+        `(R_{t+1} + γ_t+1 v(S_{t+1}) - v(S_{t})` given that state `S_{t} = i`,
+        and state `S_{t+1} = j`
     """
     assert(linalg.is_square(R))
     ns = len(R)
@@ -188,6 +210,27 @@ def delta_matrix(R, Γ, v):
 def expected_delta(P, R, Γ, v):
     """The expected TD-error given transitions `P`, reward matrix `R`,
     discount matrix `Γ`, and values `v`.
+
+    Parameters
+    ----------
+    P : Matrix[float]
+        The transition matrix, with `P[i,j]` defined as the probability of
+        transitioning to state `j` from state `i`.
+    R : Matrix[float]
+        The reward matrix, with `R[i,j]` the expected reward for transitioning
+        to state `j` from state `i`.
+    Γ : Matrix[float]
+        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+        entry is the discount applied to state `i`.
+        All entries should be in the interval [0, 1].
+    v : The value approximate function, with `v[i]` the value assigned to state
+        `i`. If `v` is the true value function, the expected TD-error will be 0.
+
+    Returns
+    -------
+    δ : Vector[float]
+        The expected TD-error vector, with `δ[i]` the expected value of
+        `(R_{t+1} + γ_t+1 v(S_{t+1}) - v(S_{t})` given that state `S_{t} = i`.
     """
     assert(linalg.is_stochastic(P))
     Δ = delta_matrix(R, Γ, v)
@@ -564,3 +607,98 @@ def lambda_second_moment(P, R, Γ, Λ, v_hat):
 
     # Solve the Bellman equation
     return pinv(I - P @ Γ @ Γ @ Λ @ Λ) @ r_bar
+
+###############################################################################
+# Objective/Error Functions
+###############################################################################
+
+def square_error(P, R, Γ, v):
+    """Square error (SE)."""
+    bias = value_error(P, R, Γ, v)
+    variance  = sobel_variance(P, R, Γ)
+    return variance + bias**2
+
+def value_error(P, R, Γ, v):
+    """Value error (VE)."""
+    assert(linalg.is_ergodic(P))
+    r = (P*R).sum(axis=1)
+    v_pi = mc_return(P, r, Γ)
+    return (v_pi - v)
+
+def bellman_error(P, R, Γ, v):
+    """Bellman error (BE)."""
+    assert(linalg.is_stochastic(P))
+    assert(P.shape == R.shape)
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
+    Δ = delta_matrix(R, Γ, v)
+    return (P * Δ) @ np.ones(ns)
+
+# The math makes sense specifying a non-representable value function, but is
+# this liable to surprise the user?
+def projected_bellman_error(P, R, Γ, X, v):
+    """Projected Bellman error."""
+    assert(linalg.is_ergodic(P))
+    assert(P.shape == R.shape)
+    d_pi = linalg.stationary(P)
+    D = np.diag(d_pi)
+    proj = X @ np.linalg.pinv(X.T @ D @ X) @ X.T @ D
+    # Bellman operator
+    Tv = r + P @ Γ @ v
+    return (v - proj @ Tv)
+
+
+def square_td_error(P, R, Γ, v):
+    """Squared temporal difference error (STDE)."""
+    assert(linalg.is_stochastic(P))
+    assert(P.shape == R.shape)
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
+    Δ = delta_matrix(R, Γ, v)
+    return (P * Δ**2) @ np.ones(ns)
+
+
+def expected_update(P, R, Γ, X, v=None):
+    """Expected update."""
+    δ = expected_delta(P, R, Γ, v):
+    return X @ δ
+
+# Weighted/normed versions of the errors
+def mse(P, R, Γ, v):
+    """Mean-squared error (MSE)."""
+    assert(linalg.is_ergodic(P))
+    d_pi = linalg.stationary(P)
+    return np.mean(d_pi*square_error(P, R, Γ, v))
+
+def msve(P, R, Γ, v):
+    """Mean-squared value error (MSVE)."""
+    assert(linalg.is_ergodic(P))
+    d_pi = linalg.stationary(P)
+    return np.mean(d_pi * value_error(P, R, Γ, v)**2)
+
+def msbe(P, R, Γ, v):
+    """Mean squared Bellman error (MSBE)."""
+    assert(linalg.is_ergodic(P))
+    d_pi = linalg.stationary(P)
+    return np.mean(d_pi * bellman_error(P, R, Γ, v)**2)
+
+def mspbe(P, R, Γ, Λ, X, v):
+    """Mean squared projected Bellman error (MSPBE)."""
+    assert(linalg.is_ergodic(P))
+    d_pi = linalg.stationary(P)
+    return np.mean(d_pi * bellman_error(P, R, Γ, v)**2)
+
+def mstde(P, R, Γ, Λ, X, v):
+    """Mean squared temporal difference error (MSTDE)."""
+    assert(linalg.is_ergodic(P))
+    d_pi = linalg.stationary(P)
+    return np.mean(d_pi * square_td_error(P, R, Γ, v))
+
+def neu(P, R, Γ, Λ, X, v):
+    """Norm of the expected update (NEU).
+
+    NEU(v) = 0 is the fixed-point of TD learning.
+    """
+    assert(linalg.is_ergodic(P))
+    d_pi = linalg.stationary(P)
+    return np.mean(d_pi * expected_update(P, R, Γ, X, v)**2)
