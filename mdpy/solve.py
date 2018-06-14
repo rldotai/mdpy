@@ -643,6 +643,7 @@ def projected_bellman_error(P, R, Γ, X, v):
     d_pi = linalg.stationary(P)
     D = np.diag(d_pi)
     proj = X @ np.linalg.pinv(X.T @ D @ X) @ X.T @ D
+
     # Bellman operator
     Tv = r + P @ Γ @ v
     return (v - proj @ Tv)
@@ -660,7 +661,7 @@ def square_td_error(P, R, Γ, v):
 
 def expected_update(P, R, Γ, X, v=None):
     """Expected update."""
-    δ = expected_delta(P, R, Γ, v):
+    δ = expected_delta(P, R, Γ, v)
     return X @ δ
 
 # Weighted/normed versions of the errors
