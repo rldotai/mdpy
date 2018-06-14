@@ -705,7 +705,7 @@ def msbe(P, R, Γ, v):
     return np.mean(d_pi * bellman_error(P, R, Γ, v) ** 2)
 
 
-def mspbe(P, R, Γ, Λ, X, v):
+def mspbe(P, R, Γ, X, v):
     """Mean squared projected Bellman error (MSPBE)."""
     assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
