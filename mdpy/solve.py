@@ -712,7 +712,7 @@ def mspbe(P, R, Γ, X, v):
     return np.mean(d_pi * projected_bellman_error(P, R, Γ, X, v) ** 2)
 
 
-def mstde(P, R, Γ, Λ, X, v):
+def mstde(P, R, Γ, v):
     """Mean squared temporal difference error (MSTDE)."""
     assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
