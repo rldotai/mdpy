@@ -699,6 +699,18 @@ def value_error(P, R, Γ, v):
     return v_pi - v
 
 
+def projection_error(P, R, Γ, X):
+    """Projection error (i.e., $v_pi - Π v_pi$)"""
+    assert linalg.is_ergodic(P)
+    assert P.shape == R.shape
+    r = (P * R).sum(axis=1)
+    v_pi = mc_return(P, r, Γ)
+    d_pi = linalg.stationary(P)
+    D = np.diag(d_pi)
+    Π = X @ np.linalg.pinv(X.T @ D @ X) @ X.T @ D
+    return v_pi - Π @ v_pi
+
+
 def bellman_error(P, R, Γ, v):
     """Bellman error (BE)."""
     assert linalg.is_stochastic(P)
@@ -716,11 +728,11 @@ def projected_bellman_error(P, R, Γ, X, v):
     r = (P * R).sum(axis=1)
     d_pi = linalg.stationary(P)
     D = np.diag(d_pi)
-    proj = X @ np.linalg.pinv(X.T @ D @ X) @ X.T @ D
+    Π = X @ np.linalg.pinv(X.T @ D @ X) @ X.T @ D
 
     # Bellman operator
     Tv = r + P @ Γ @ v
-    return v - proj @ Tv
+    return v - Π @ Tv
 
 
 def square_td_error(P, R, Γ, v):
