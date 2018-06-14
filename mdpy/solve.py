@@ -444,6 +444,64 @@ def warp(P, Γ, Λ):
     Λ = as_diag(Λ, ns)
     return potential(P @ Γ @ Λ)
 
+def lspi_weights(P, r, Γ, X):
+    """Least-squares policy iteration fixed-point weights.
+
+    TODO: Need to actually go through the details to make sure this is right.
+    """
+    assert linalg.is_stochastic(P)
+    assert X.ndim == 2
+    assert len(X) == len(P)
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
+    Λ = as_diag(Λ, ns)
+
+    # Calculate intermediate quantities
+    I = np.eye(ns)
+    dist = linalg.stationary(P)
+    D = np.diag(dist)
+    Π = X @ pinv(X.T @ D @ X) @ X.T @ D
+
+    A = X.T @ ( X - P @ Γ @ Π @ X)
+    b = X.T @ r
+    return pinv(A) @ b
+
+def lspi_values(P, r, Γ, X):
+    """Least-squares policy iteration fixed-point values."""
+    return X @ lspi_weights(P, r, Γ, X)
+
+def brm_weights(P, r, Γ, X):
+    """Bellman-residual minimization fixed-point weights.
+
+    TODO: Need to actually go through the details to make sure this is right
+    """
+    assert linalg.is_stochastic(P)
+    assert X.ndim == 2
+    assert len(X) == len(P)
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
+    Λ = as_diag(Λ, ns)
+
+    # Calculate intermediate quantities
+    I = np.eye(ns)
+    dist = linalg.stationary(P)
+    D = np.diag(dist)
+    Π = X @ pinv(X.T @ D @ X) @ X.T @ D
+
+    A = (X - P @ Γ @ Π @ X).T @ (X - P @ Γ @ Π @ X)
+    b = (X - P @ Γ @ Π @ X).T @ r
+    return pinv(A) @ b
+
+def brm_values(P, r, Γ, X):
+    """Bellman-residual minimization fixed-point values.
+
+    TODO:
+        Need to go through the math to check that this is right; as it currently
+        is it seems kinda terrible, which surely couldn't be the case given that
+        TD(λ) has existed since the 80s?
+    """
+    return X @ brm_weights(P, r, Γ, X)
+
 
 ###############################################################################
 # Variance and Second Moment
