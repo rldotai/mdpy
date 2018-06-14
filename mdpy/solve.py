@@ -678,7 +678,7 @@ def square_td_error(P, R, Γ, v):
 def expected_update(P, R, Γ, X, v):
     """Expected update."""
     δ = expected_delta(P, R, Γ, v)
-    return X @ δ
+    return X.T @ δ
 
 # -----------------------------------------------------------------------------
 # Weighted/normed versions of the errors
