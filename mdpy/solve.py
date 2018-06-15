@@ -837,4 +837,5 @@ def neu(P, R, Γ, X, v):
     """
     assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
-    return np.sum(expected_update(P, R, Γ, X, v) ** 2)
+    EU = expected_update(P, R, Γ, X, v)
+    return  EU.T @ EU
