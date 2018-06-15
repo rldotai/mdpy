@@ -762,35 +762,35 @@ def mse(P, R, Γ, v):
     """Mean-squared error (MSE)."""
     assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
-    return np.mean(d_pi * square_error(P, R, Γ, v))
+    return np.sum(d_pi * square_error(P, R, Γ, v))
 
 
 def msve(P, R, Γ, v):
     """Mean-squared value error (MSVE)."""
     assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
-    return np.mean(d_pi * value_error(P, R, Γ, v) ** 2)
+    return np.sum(d_pi * value_error(P, R, Γ, v) ** 2)
 
 
 def msbe(P, R, Γ, v):
     """Mean squared Bellman error (MSBE)."""
     assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
-    return np.mean(d_pi * bellman_error(P, R, Γ, v) ** 2)
+    return np.sum(d_pi * bellman_error(P, R, Γ, v) ** 2)
 
 
 def mspbe(P, R, Γ, X, v):
     """Mean squared projected Bellman error (MSPBE)."""
     assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
-    return np.mean(d_pi * projected_bellman_error(P, R, Γ, X, v) ** 2)
+    return np.sum(d_pi * projected_bellman_error(P, R, Γ, X, v) ** 2)
 
 
 def mstde(P, R, Γ, v):
     """Mean squared temporal difference error (MSTDE)."""
     assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
-    return np.mean(d_pi * square_td_error(P, R, Γ, v))
+    return np.sum(d_pi * square_td_error(P, R, Γ, v))
 
 
 def neu(P, R, Γ, X, v):
@@ -800,4 +800,4 @@ def neu(P, R, Γ, X, v):
     """
     assert linalg.is_ergodic(P)
     d_pi = linalg.stationary(P)
-    return np.mean(expected_update(P, R, Γ, X, v) ** 2)
+    return np.sum(expected_update(P, R, Γ, X, v) ** 2)
