@@ -723,14 +723,16 @@ def lambda_second_moment(P, R, Γ, Λ, v_hat):
 ###############################################################################
 
 def square_error(P, R, Γ, v):
-    """Square error (SE)."""
+    """Square error (SE), the combination of squared bias and the variance."""
     bias = value_error(P, R, Γ, v)
     variance = sobel_variance(P, R, Γ)
     return variance + bias ** 2
 
 
 def value_error(P, R, Γ, v):
-    """Value error (VE)."""
+    """Value error (VE), the difference between the true value function and
+    the one supplied AKA the bias.
+    """
     assert linalg.is_ergodic(P)
     ns = len(P)
     Γ = as_diag(Γ, ns)
@@ -740,7 +742,9 @@ def value_error(P, R, Γ, v):
 
 
 def projection_error(P, R, Γ, X):
-    """Projection error (i.e., $v_pi - Π v_pi$)"""
+    """Projection error between the true value and the approximation subspace.
+    (that is., `v_pi - Π v_pi`)
+    """
     assert linalg.is_ergodic(P)
     assert P.shape == R.shape
     ns = len(P)
@@ -755,7 +759,9 @@ def projection_error(P, R, Γ, X):
 
 
 def bellman_error(P, R, Γ, v):
-    """Bellman error (BE)."""
+    """Bellman error (BE), AKA the expected Bellman residual, AKA the expected
+    temporal difference error.
+    """
     assert linalg.is_stochastic(P)
     assert P.shape == R.shape
     ns = len(P)
@@ -815,6 +821,25 @@ def lambda_expected_update(P, R, Γ, Λ, X, v):
     E = expected_traces(P, Γ, Λ, X)
     δ = expected_delta(P, R, Γ, v)
     return E.T @ δ
+
+def lambda_projected_bellman_error(P, R, Γ, Λ, X, v):
+    """Projection error with accumulating eligibility traces."""
+    assert linalg.is_stochastic(P)
+    assert P.shape == R.shape
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
+    Λ = as_diag(Λ, ns)
+    r = (P * R).sum(axis=1)
+
+    # Projection operator
+    d_pi = linalg.stationary(P)
+    D = np.diag(d_pi)
+    Π = X @ np.linalg.pinv(X.T @ D @ X) @ X.T @ D
+
+    # λ-Bellman operator
+    P_lm = I - pinv(I - P @ Γ @ Λ) @ (I - P @ Γ)
+    Tv_lm = pinv(I - P @ Γ @ Λ) @ r + P_lm @ v
+    return Π @ Tv - v
 
 # -----------------------------------------------------------------------------
 # Weighted/normed versions of the errors
