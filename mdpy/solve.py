@@ -297,6 +297,43 @@ def lambda_return(P, r, Γ, Λ, v_hat):
     # Solve the Bellman equation
     return np.linalg.pinv(I - P @ Γ @ Λ) @ r_hat
 
+def expected_traces(P, Γ, Λ, X):
+    """The trace matrix for accumulating eligibility traces.
+    That is, a matrix with the same shape as `X`, but where the i-th row
+    corresponds to the expected value of the eligibility trace in the
+    steady-state given that the current state is `i`.
+
+    Parameters
+    ----------
+    P : Matrix[float]
+        The transition matrix, with `P[i,j]` defined as the probability of
+        transitioning to state `j` from state `i`.
+    Γ : Matrix[float]
+        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+        entry is the discount applied to state `i`.
+        All entries should be in the interval [0, 1].
+    Λ : Matrix[float]
+        The state-dependent bootstrapping matrix, a diagonal matrix whose
+        (i,i)-th entry is the bootstrapping (λ value) for state `i`.
+        All entries should be in the interval [0, 1].
+    X : Matrix
+        The feature matrix, whose rows correspond to the feature representation
+        for each state.
+        For example, `X[i]` provides the features for state `i`.
+    """
+    assert linalg.is_stochastic(P)
+    assert X.ndim == 2
+    assert len(X) == len(P)
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
+    Λ = as_diag(Λ, ns)
+
+    # Calculate intermediate quantities
+    I = np.eye(ns)
+    dist = linalg.stationary(P)
+    D = np.diag(dist)
+    return (X.T @ D @ pinv(I - P @ Γ @ Λ)).T
+
 
 def etd_weights(P, r, Γ, Λ, X, ivec):
     """Compute the fixed-point of ETD(λ) by solving its Bellman equation.
