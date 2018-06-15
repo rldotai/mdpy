@@ -718,8 +718,9 @@ def lambda_second_moment(P, R, Γ, Λ, v_hat):
 
 ###############################################################################
 # Objective/Error Functions
+#
+# TODO: Objective function for the λ-return
 ###############################################################################
-
 
 def square_error(P, R, Γ, v):
     """Square error (SE)."""
@@ -731,6 +732,8 @@ def square_error(P, R, Γ, v):
 def value_error(P, R, Γ, v):
     """Value error (VE)."""
     assert linalg.is_ergodic(P)
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
     r = (P * R).sum(axis=1)
     v_pi = mc_return(P, r, Γ)
     return v_pi - v
@@ -740,6 +743,9 @@ def projection_error(P, R, Γ, X):
     """Projection error (i.e., $v_pi - Π v_pi$)"""
     assert linalg.is_ergodic(P)
     assert P.shape == R.shape
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
+
     r = (P * R).sum(axis=1)
     v_pi = mc_return(P, r, Γ)
     d_pi = linalg.stationary(P)
@@ -762,6 +768,8 @@ def projected_bellman_error(P, R, Γ, X, v):
     """Projected Bellman error."""
     assert linalg.is_ergodic(P)
     assert P.shape == R.shape
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
     r = (P * R).sum(axis=1)
     d_pi = linalg.stationary(P)
     D = np.diag(d_pi)
@@ -786,10 +794,27 @@ def expected_update(P, R, Γ, X, v):
     """Expected update."""
     assert linalg.is_stochastic(P)
     assert P.shape == R.shape
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
     d_pi = linalg.stationary(P)
     D = np.diag(d_pi)
     δ = expected_delta(P, R, Γ, v)
     return X.T @ D @ δ
+
+# -----------------------------------------------------------------------------
+# With eligibility traces / λ-return
+# -----------------------------------------------------------------------------
+def lambda_expected_update(P, R, Γ, Λ, X, v):
+    """Expected update with accumulating eligibility traces."""
+    assert linalg.is_stochastic(P)
+    assert P.shape == R.shape
+    ns = len(P)
+    Γ = as_diag(Γ, ns)
+    Λ = as_diag(Λ, ns)
+
+    E = expected_traces(P, Γ, Λ, X)
+    δ = expected_delta(P, R, Γ, v)
+    return E.T @ δ
 
 # -----------------------------------------------------------------------------
 # Weighted/normed versions of the errors
