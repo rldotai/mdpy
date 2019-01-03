@@ -1,0 +1,29 @@
+mdpy package
+============
+
+Subpackages
+-----------
+
+.. toctree::
+
+    mdpy.examples
+
+Submodules
+----------
+
+.. toctree::
+
+   mdpy.discrete
+   mdpy.empirical
+   mdpy.linalg
+   mdpy.mdp
+   mdpy.solve
+   mdpy.util
+
+Module contents
+---------------
+
+.. automodule:: mdpy
+    :members:
+    :undoc-members:
+    :show-inheritance:

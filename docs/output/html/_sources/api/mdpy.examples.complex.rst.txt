@@ -1,0 +1,7 @@
+mdpy.examples.complex module
+============================
+
+.. automodule:: mdpy.examples.complex
+    :members:
+    :undoc-members:
+    :show-inheritance:

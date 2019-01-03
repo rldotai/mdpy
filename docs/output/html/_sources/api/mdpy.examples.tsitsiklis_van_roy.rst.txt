@@ -1,0 +1,7 @@
+mdpy.examples.tsitsiklis\_van\_roy module
+=========================================
+
+.. automodule:: mdpy.examples.tsitsiklis_van_roy
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,168 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>mdpy.discrete module &#8212; mdpy 0.1.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-mdpy.discrete">
+<span id="mdpy-discrete-module"></span><h1>mdpy.discrete module<a class="headerlink" href="#module-mdpy.discrete" title="Permalink to this headline">¶</a></h1>
+<p>Implementing a categorical discrete random variable along the lines of
+<cite>scipy.rv_discrete</cite>, which required a bit more effort and finesse than would
+generally be considered preferable.</p>
+<dl class="class">
+<dt id="mdpy.discrete.categorical">
+<em class="property">class </em><code class="descclassname">mdpy.discrete.</code><code class="descname">categorical</code><span class="sig-paren">(</span><em>outcomes</em>, <em>weights=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/discrete.html#categorical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.discrete.categorical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">scipy.stats._distn_infrastructure.rv_sample</span></code></p>
+<p>A class created to express floating point categorical random variables in
+terms of <cite>scipy</cite> random variables.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>For reasons explored below, I am unsure if I’ve overridden everything that
+should be overridden.
+The <cite>pmf</cite>, <cite>cdf</cite>, <cite>mean</cite>,`var`, and <cite>entropy</cite> methods appear to work.</p>
+<p>The (ab)use of metaprogramming in <cite>scipy.stats</cite> made this substantially more
+difficult than it had to be.</p>
+<p class="last">If you’re ever in the mood for a terrible time, read [the source code](<a class="reference external" href="https://github.com/scipy/scipy/blob/v0.18.1/scipy/stats/_distn_infrastructure.py">https://github.com/scipy/scipy/blob/v0.18.1/scipy/stats/_distn_infrastructure.py</a>)
+for the <cite>rv_discrete</cite> class.
+It appears that they have refactored <cite>rv_sample</cite> <em>into</em> <cite>rv_discrete</cite>, so
+that <cite>rv_discrete</cite> actually determines at class instantiation whether it
+will actually be <cite>rv_discrete</cite> or a <cite>rv_sample</cite>, which is a subclass of
+<cite>rv_discrete</cite>,</p>
+</div>
+<dl class="method">
+<dt id="mdpy.discrete.categorical.pmf">
+<code class="descname">pmf</code><span class="sig-paren">(</span><em>k</em>, <em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/discrete.html#categorical.pmf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.discrete.categorical.pmf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Probability mass function at k of the given RV.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>k</strong> (<em>array_like</em>) – Quantiles.</li>
+<li><strong>arg2</strong><strong>, </strong><strong>arg3</strong><strong>,</strong><strong>..</strong> (<em>arg1</em><em>,</em>) – The shape parameter(s) for the distribution (see docstring of the
+instance object for more information)</li>
+<li><strong>loc</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Location parameter (default=0).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>pmf</strong> – Probability mass function evaluated at k</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Overriding because <cite>scipy.stats.rv_discrete</cite> only supports integer
+values for some stupid reason.</p>
+<p>Changed:
+<a href="#id1"><span class="problematic" id="id2">``</span></a>`
+— cond1 = (k &gt;= self.a) &amp; (k &lt;= self.b) &amp; self._nonzero(k, <a href="#id3"><span class="problematic" id="id4">*</span></a>args)
++++ cond1 = (k &gt;= self.a) &amp; (k &lt;= self.b)</p>
+<p>— goodargs = argsreduce(cond, <a href="#id5"><span class="problematic" id="id6">*</span></a>((k,)+args))
++++ goodargs = (k,) + args
+<a href="#id7"><span class="problematic" id="id8">``</span></a>`
++ some misc. comments</p>
+<p>Note that <cite>self._nonzero(k, *args)</cite> is exactly equivalent to <cite>floor(k) == k</cite>,
+so not only do you have higher overhead from function calls, but it’s not even
+shorter! And it’s only used in TWO places.
+Also, a lot of the internal functions appear to exist just to alias (and therefore
+slow down) existing <cite>numpy</cite> functions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mdpy.discrete.categorical.rvs">
+<code class="descname">rvs</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/discrete.html#categorical.rvs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.discrete.categorical.rvs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overriding to provide support for non-integer, uh, support.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.discrete.drv">
+<code class="descclassname">mdpy.discrete.</code><code class="descname">drv</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/discrete.html#drv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.discrete.drv" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function that creates and returns a <cite>categorical</cite> random variable, but
+is shorter to type.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/mdpy.discrete.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, rldotai.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/api/mdpy.discrete.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

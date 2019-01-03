@@ -1,0 +1,7 @@
+mdpy.linalg module
+==================
+
+.. automodule:: mdpy.linalg
+    :members:
+    :undoc-members:
+    :show-inheritance:

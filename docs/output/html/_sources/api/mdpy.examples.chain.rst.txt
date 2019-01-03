@@ -1,0 +1,7 @@
+mdpy.examples.chain module
+==========================
+
+.. automodule:: mdpy.examples.chain
+    :members:
+    :undoc-members:
+    :show-inheritance:

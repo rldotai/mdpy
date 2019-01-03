@@ -1,0 +1,21 @@
+mdpy.examples package
+=====================
+
+Submodules
+----------
+
+.. toctree::
+
+   mdpy.examples.baird
+   mdpy.examples.boyan_chain
+   mdpy.examples.chain
+   mdpy.examples.complex
+   mdpy.examples.tsitsiklis_van_roy
+
+Module contents
+---------------
+
+.. automodule:: mdpy.examples
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,7 @@
+mdpy.mdp module
+===============
+
+.. automodule:: mdpy.mdp
+    :members:
+    :undoc-members:
+    :show-inheritance:

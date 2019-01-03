@@ -1,0 +1,199 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>mdpy.mdp module &#8212; mdpy 0.1.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-mdpy.mdp">
+<span id="mdpy-mdp-module"></span><h1>mdpy.mdp module<a class="headerlink" href="#module-mdpy.mdp" title="Permalink to this headline">¶</a></h1>
+<p>Implementation of a Discrete MDP class.</p>
+<dl class="class">
+<dt id="mdpy.mdp.ArrayMDP">
+<em class="property">class </em><code class="descclassname">mdpy.mdp.</code><code class="descname">ArrayMDP</code><span class="sig-paren">(</span><em>transitions</em>, <em>rewards</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#ArrayMDP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.mdp.ArrayMDP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>MDP class, formulated in terms of multi-arrays.
+It requires an two arrays, one for the transition probabilities (<cite>T</cite>) and
+another of the same shape for the expected rewards (<cite>R</cite>).</p>
+<p>For example, given state <cite>s</cite>, action <cite>a</cite>, and next state <cite>sp</cite>, then the
+probability of the transition <cite>(s, a, sp)</cite> is <cite>T[s,a,sp]</cite> and the expected
+reward for undergoing that transition is <cite>R[s,a,sp]</cite>.</p>
+<dl class="method">
+<dt id="mdpy.mdp.ArrayMDP.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>transitions</em>, <em>rewards</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#ArrayMDP.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.mdp.ArrayMDP.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an ArrayMDP from the supplied transition and reward arrays.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mdpy.mdp.ArrayMDP.prob">
+<code class="descname">prob</code><span class="sig-paren">(</span><em>s</em>, <em>a=None</em>, <em>sp=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#ArrayMDP.prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.mdp.ArrayMDP.prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the probability of supplied transition, or of the possible
+transitions conditioned accordingly.</p>
+<dl class="docutils">
+<dt>TODO:</dt>
+<dd><p class="first">Should I make this compatible with Baye’s rule (so given <cite>s</cite>, <cite>sp</cite>)
+we can get the probability that each action was selected?
+Or will this be a confusing API?</p>
+<p>It would be as easy as:</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a>`
+if a is None and sp is not None:</p>
+<blockquote>
+<div>return ret/np.sum(ret)</div></blockquote>
+<p class="last"><a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mdpy.mdp.ArrayMDP.under_policy">
+<code class="descname">under_policy</code><span class="sig-paren">(</span><em>policy</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#ArrayMDP.under_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.mdp.ArrayMDP.under_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce the Markov process that results from acting according to the
+given policy in the MDP.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mdpy.mdp.MarkovProcess">
+<em class="property">class </em><code class="descclassname">mdpy.mdp.</code><code class="descname">MarkovProcess</code><span class="sig-paren">(</span><em>transitions</em>, <em>rewards</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#MarkovProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.mdp.MarkovProcess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class implementing Markov processes, which are like MDPs where you
+don’t make any decisions.
+It requires two arrays, one for the transition probabilities (<cite>T</cite>) and
+another of the same shape for the expected rewards (<cite>R</cite>).</p>
+<p>For example, given state <cite>s</cite> and next state <cite>sp</cite>, the probability of the
+transition <cite>(s, sp)</cite> is <cite>T[s, sp]</cite>, with reward <cite>R[s, sp]</cite>.</p>
+<dl class="method">
+<dt id="mdpy.mdp.MarkovProcess.expected_reward">
+<code class="descname">expected_reward</code><span class="sig-paren">(</span><em>s</em>, <em>sp=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#MarkovProcess.expected_reward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.mdp.MarkovProcess.expected_reward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the expected reward either given a state or a transition.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="mdpy.mdp.MarkovProcess.from_unnormalized">
+<em class="property">classmethod </em><code class="descname">from_unnormalized</code><span class="sig-paren">(</span><em>transitions</em>, <em>rewards=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#MarkovProcess.from_unnormalized"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.mdp.MarkovProcess.from_unnormalized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a Markov Process using an arbitrary transition matrix by
+taking the absolute value and normalizing the transition probabilities.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mdpy.mdp.MarkovProcess.prob">
+<code class="descname">prob</code><span class="sig-paren">(</span><em>s</em>, <em>sp=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#MarkovProcess.prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.mdp.MarkovProcess.prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the probability of the transition, or if <cite>sp</cite> is not given,
+instead return the probability of every transition from <cite>s</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mdpy.mdp.MarkovProcess.reward">
+<code class="descname">reward</code><span class="sig-paren">(</span><em>s</em>, <em>sp</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#MarkovProcess.reward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.mdp.MarkovProcess.reward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample a reward from the transition <cite>(s, sp)</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mdpy.mdp.MarkovProcess.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>n</em>, <em>s0=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#MarkovProcess.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.mdp.MarkovProcess.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the Markov process for <cite>n</cite> steps, return a list of transitions.</p>
+<p>The result has the form:</p>
+<blockquote>
+<div><cite>[{‘s’: s, ‘sp’: sp, ‘r’: r}, …]</cite></div></blockquote>
+<p>So for <cite>ret[t]</cite>, ‘s’ is the state at time <cite>t</cite>, ‘r’ is the reward, and
+‘sp’ is the next state.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mdpy.mdp.MarkovProcess.states">
+<code class="descname">states</code><a class="headerlink" href="#mdpy.mdp.MarkovProcess.states" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mdpy.mdp.MarkovProcess.step">
+<code class="descname">step</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#MarkovProcess.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.mdp.MarkovProcess.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transition from a state to its successor, returning <cite>(sp, r)</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mdpy.mdp.MarkovProcess.transition">
+<code class="descname">transition</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#MarkovProcess.transition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.mdp.MarkovProcess.transition" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/mdpy.mdp.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, rldotai.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/api/mdpy.mdp.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

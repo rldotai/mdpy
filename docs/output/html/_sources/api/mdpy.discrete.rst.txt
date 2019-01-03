@@ -1,0 +1,7 @@
+mdpy.discrete module
+====================
+
+.. automodule:: mdpy.discrete
+    :members:
+    :undoc-members:
+    :show-inheritance:

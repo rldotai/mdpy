@@ -1,0 +1,7 @@
+mdpy.empirical module
+=====================
+
+.. automodule:: mdpy.empirical
+    :members:
+    :undoc-members:
+    :show-inheritance:

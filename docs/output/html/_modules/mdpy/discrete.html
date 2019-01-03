@@ -1,0 +1,199 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>mdpy.discrete &#8212; mdpy 0.1.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for mdpy.discrete</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Implementing a categorical discrete random variable along the lines of</span>
+<span class="sd">`scipy.rv_discrete`, which required a bit more effort and finesse than would</span>
+<span class="sd">generally be considered preferable.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.linalg</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+<span class="kn">import</span> <span class="nn">mdpy</span>
+<span class="kn">from</span> <span class="nn">numbers</span> <span class="k">import</span> <span class="n">Number</span>
+
+
+<div class="viewcode-block" id="categorical"><a class="viewcode-back" href="../../api/mdpy.discrete.html#mdpy.categorical">[docs]</a><span class="k">class</span> <span class="nc">categorical</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">_distn_infrastructure</span><span class="o">.</span><span class="n">rv_sample</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class created to express floating point categorical random variables in</span>
+<span class="sd">    terms of `scipy` random variables.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    For reasons explored below, I am unsure if I&#39;ve overridden everything that</span>
+<span class="sd">    should be overridden.</span>
+<span class="sd">    The `pmf`, `cdf`, `mean`,`var`, and `entropy` methods appear to work.</span>
+
+<span class="sd">    Rant</span>
+<span class="sd">    ----</span>
+<span class="sd">    The (ab)use of metaprogramming in `scipy.stats` made this substantially more</span>
+<span class="sd">    difficult than it had to be.</span>
+
+<span class="sd">    If you&#39;re ever in the mood for a terrible time, read [the source code](https://github.com/scipy/scipy/blob/v0.18.1/scipy/stats/_distn_infrastructure.py)</span>
+<span class="sd">    for the `rv_discrete` class.</span>
+<span class="sd">    It appears that they have refactored `rv_sample` *into* `rv_discrete`, so</span>
+<span class="sd">    that `rv_discrete` actually determines at class instantiation whether it</span>
+<span class="sd">    will actually be `rv_discrete` or a `rv_sample`, which is a subclass of</span>
+<span class="sd">    `rv_discrete`,</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outcomes</span><span class="p">,</span> <span class="n">Number</span><span class="p">):</span>
+            <span class="n">outcomes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">outcomes</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">outcomes</span><span class="p">]</span>
+
+        <span class="c1"># Assign probabilities according to weights</span>
+        <span class="n">probs</span> <span class="o">=</span> <span class="n">weights</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+
+        <span class="c1"># TODO: Check validity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">outcomes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">probs</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">probs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span>   <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">outcomes</span><span class="p">,</span> <span class="n">probs</span><span class="p">))</span>
+
+        <span class="c1"># Set the &#39;hidden&#39; random variable mapping states to outcomes and hope</span>
+        <span class="c1"># that scipy doesn&#39;t implement things that fail with non-integers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__privaterv</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">rv_discrete</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">probs</span><span class="p">)),</span> <span class="n">probs</span><span class="p">))()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">categorical</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="p">(</span><span class="n">outcomes</span><span class="p">,</span> <span class="n">probs</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;categorical&#39;</span><span class="p">,</span> <span class="n">inc</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<div class="viewcode-block" id="categorical.rvs"><a class="viewcode-back" href="../../api/mdpy.discrete.html#mdpy.categorical.rvs">[docs]</a>    <span class="k">def</span> <span class="nf">rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Overriding to provide support for non-integer, uh, support.&quot;&quot;&quot;</span>
+        <span class="n">choices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__privaterv</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span><span class="p">[</span><span class="n">choices</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="categorical.pmf"><a class="viewcode-back" href="../../api/mdpy.discrete.html#mdpy.categorical.pmf">[docs]</a>    <span class="k">def</span> <span class="nf">pmf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Probability mass function at k of the given RV.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        k : array_like</span>
+<span class="sd">            Quantiles.</span>
+<span class="sd">        arg1, arg2, arg3,... : array_like</span>
+<span class="sd">            The shape parameter(s) for the distribution (see docstring of the</span>
+<span class="sd">            instance object for more information)</span>
+<span class="sd">        loc : array_like, optional</span>
+<span class="sd">            Location parameter (default=0).</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pmf : array_like</span>
+<span class="sd">            Probability mass function evaluated at k</span>
+
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Overriding because `scipy.stats.rv_discrete` only supports integer</span>
+<span class="sd">        values for some stupid reason.</span>
+
+<span class="sd">        Changed:</span>
+<span class="sd">        ```</span>
+<span class="sd">        --- cond1 = (k &gt;= self.a) &amp; (k &lt;= self.b) &amp; self._nonzero(k, *args)</span>
+<span class="sd">        +++ cond1 = (k &gt;= self.a) &amp; (k &lt;= self.b)</span>
+
+<span class="sd">        --- goodargs = argsreduce(cond, *((k,)+args))</span>
+<span class="sd">        +++ goodargs = (k,) + args</span>
+<span class="sd">        ```</span>
+<span class="sd">        + some misc. comments</span>
+
+<span class="sd">        Note that `self._nonzero(k, *args)` is exactly equivalent to `floor(k) == k`,</span>
+<span class="sd">        so not only do you have higher overhead from function calls, but it&#39;s not even</span>
+<span class="sd">        shorter! And it&#39;s only used in TWO places.</span>
+<span class="sd">        Also, a lot of the internal functions appear to exist just to alias (and therefore</span>
+<span class="sd">        slow down) existing `numpy` functions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">args</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+        <span class="n">k</span><span class="p">,</span> <span class="n">loc</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">asarray</span><span class="p">,</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">loc</span><span class="p">))</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">asarray</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">k</span><span class="o">-</span><span class="n">loc</span><span class="p">))</span>
+        <span class="n">cond0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_argcheck</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">cond1</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">k</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">)</span>
+        <span class="n">cond</span> <span class="o">=</span> <span class="n">cond0</span> <span class="o">&amp;</span> <span class="n">cond1</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">cond</span><span class="p">),</span> <span class="s1">&#39;d&#39;</span><span class="p">)</span>
+        <span class="n">scipy</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">cond0</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">badvalue</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">cond</span><span class="p">):</span>
+            <span class="c1"># I have no idea what `goodargs` does and I just don&#39;t care anymore</span>
+            <span class="n">goodargs</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span><span class="p">,)</span> <span class="o">+</span> <span class="n">args</span>
+            <span class="n">scipy</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">cond</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pmf</span><span class="p">(</span><span class="o">*</span><span class="n">goodargs</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">output</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">output</span><span class="p">[()]</span>
+        <span class="k">return</span> <span class="n">output</span></div></div>
+
+
+<div class="viewcode-block" id="drv"><a class="viewcode-back" href="../../api/mdpy.discrete.html#mdpy.drv">[docs]</a><span class="k">def</span> <span class="nf">drv</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A function that creates and returns a `categorical` random variable, but</span>
+<span class="sd">    is shorter to type.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">categorical</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, rldotai.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

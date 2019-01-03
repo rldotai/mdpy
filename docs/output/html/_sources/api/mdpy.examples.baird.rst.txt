@@ -1,0 +1,7 @@
+mdpy.examples.baird module
+==========================
+
+.. automodule:: mdpy.examples.baird
+    :members:
+    :undoc-members:
+    :show-inheritance:

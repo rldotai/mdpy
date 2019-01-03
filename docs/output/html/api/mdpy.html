@@ -1,0 +1,1378 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>mdpy package &#8212; mdpy 0.1.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="mdpy-package">
+<h1>mdpy package<a class="headerlink" href="#mdpy-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="mdpy.examples.html">mdpy.examples package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mdpy.examples.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mdpy.examples.baird.html">mdpy.examples.baird module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mdpy.examples.boyan_chain.html">mdpy.examples.boyan_chain module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mdpy.examples.chain.html">mdpy.examples.chain module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mdpy.examples.complex.html">mdpy.examples.complex module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mdpy.examples.tsitsiklis_van_roy.html">mdpy.examples.tsitsiklis_van_roy module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mdpy.examples.html#module-mdpy.examples">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="mdpy.discrete.html">mdpy.discrete module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mdpy.empirical.html">mdpy.empirical module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mdpy.linalg.html">mdpy.linalg module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mdpy.mdp.html">mdpy.mdp module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mdpy.solve.html">mdpy.solve module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mdpy.util.html">mdpy.util module</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="module-mdpy">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-mdpy" title="Permalink to this headline">¶</a></h2>
+<p>mdpy - Markov decision processes in Python</p>
+<dl class="class">
+<dt id="mdpy.categorical">
+<em class="property">class </em><code class="descclassname">mdpy.</code><code class="descname">categorical</code><span class="sig-paren">(</span><em>outcomes</em>, <em>weights=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/discrete.html#categorical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.categorical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">scipy.stats._distn_infrastructure.rv_sample</span></code></p>
+<p>A class created to express floating point categorical random variables in
+terms of <cite>scipy</cite> random variables.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>For reasons explored below, I am unsure if I’ve overridden everything that
+should be overridden.
+The <cite>pmf</cite>, <cite>cdf</cite>, <cite>mean</cite>,`var`, and <cite>entropy</cite> methods appear to work.</p>
+<p>The (ab)use of metaprogramming in <cite>scipy.stats</cite> made this substantially more
+difficult than it had to be.</p>
+<p class="last">If you’re ever in the mood for a terrible time, read [the source code](<a class="reference external" href="https://github.com/scipy/scipy/blob/v0.18.1/scipy/stats/_distn_infrastructure.py">https://github.com/scipy/scipy/blob/v0.18.1/scipy/stats/_distn_infrastructure.py</a>)
+for the <cite>rv_discrete</cite> class.
+It appears that they have refactored <cite>rv_sample</cite> <em>into</em> <cite>rv_discrete</cite>, so
+that <cite>rv_discrete</cite> actually determines at class instantiation whether it
+will actually be <cite>rv_discrete</cite> or a <cite>rv_sample</cite>, which is a subclass of
+<cite>rv_discrete</cite>,</p>
+</div>
+<dl class="method">
+<dt id="mdpy.categorical.pmf">
+<code class="descname">pmf</code><span class="sig-paren">(</span><em>k</em>, <em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/discrete.html#categorical.pmf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.categorical.pmf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Probability mass function at k of the given RV.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>k</strong> (<em>array_like</em>) – Quantiles.</li>
+<li><strong>arg2</strong><strong>, </strong><strong>arg3</strong><strong>,</strong><strong>..</strong> (<em>arg1</em><em>,</em>) – The shape parameter(s) for the distribution (see docstring of the
+instance object for more information)</li>
+<li><strong>loc</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Location parameter (default=0).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>pmf</strong> – Probability mass function evaluated at k</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Overriding because <cite>scipy.stats.rv_discrete</cite> only supports integer
+values for some stupid reason.</p>
+<p>Changed:
+<a href="#id1"><span class="problematic" id="id2">``</span></a>`
+— cond1 = (k &gt;= self.a) &amp; (k &lt;= self.b) &amp; self._nonzero(k, <a href="#id3"><span class="problematic" id="id4">*</span></a>args)
++++ cond1 = (k &gt;= self.a) &amp; (k &lt;= self.b)</p>
+<p>— goodargs = argsreduce(cond, <a href="#id5"><span class="problematic" id="id6">*</span></a>((k,)+args))
++++ goodargs = (k,) + args
+<a href="#id7"><span class="problematic" id="id8">``</span></a>`
++ some misc. comments</p>
+<p>Note that <cite>self._nonzero(k, *args)</cite> is exactly equivalent to <cite>floor(k) == k</cite>,
+so not only do you have higher overhead from function calls, but it’s not even
+shorter! And it’s only used in TWO places.
+Also, a lot of the internal functions appear to exist just to alias (and therefore
+slow down) existing <cite>numpy</cite> functions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mdpy.categorical.rvs">
+<code class="descname">rvs</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/discrete.html#categorical.rvs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.categorical.rvs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overriding to provide support for non-integer, uh, support.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.drv">
+<code class="descclassname">mdpy.</code><code class="descname">drv</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/discrete.html#drv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.drv" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function that creates and returns a <cite>categorical</cite> random variable, but
+is shorter to type.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="mdpy.MarkovProcess">
+<em class="property">class </em><code class="descclassname">mdpy.</code><code class="descname">MarkovProcess</code><span class="sig-paren">(</span><em>transitions</em>, <em>rewards</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#MarkovProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.MarkovProcess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class implementing Markov processes, which are like MDPs where you
+don’t make any decisions.
+It requires two arrays, one for the transition probabilities (<cite>T</cite>) and
+another of the same shape for the expected rewards (<cite>R</cite>).</p>
+<p>For example, given state <cite>s</cite> and next state <cite>sp</cite>, the probability of the
+transition <cite>(s, sp)</cite> is <cite>T[s, sp]</cite>, with reward <cite>R[s, sp]</cite>.</p>
+<dl class="method">
+<dt id="mdpy.MarkovProcess.expected_reward">
+<code class="descname">expected_reward</code><span class="sig-paren">(</span><em>s</em>, <em>sp=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#MarkovProcess.expected_reward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.MarkovProcess.expected_reward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the expected reward either given a state or a transition.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="mdpy.MarkovProcess.from_unnormalized">
+<em class="property">classmethod </em><code class="descname">from_unnormalized</code><span class="sig-paren">(</span><em>transitions</em>, <em>rewards=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#MarkovProcess.from_unnormalized"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.MarkovProcess.from_unnormalized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a Markov Process using an arbitrary transition matrix by
+taking the absolute value and normalizing the transition probabilities.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mdpy.MarkovProcess.prob">
+<code class="descname">prob</code><span class="sig-paren">(</span><em>s</em>, <em>sp=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#MarkovProcess.prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.MarkovProcess.prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the probability of the transition, or if <cite>sp</cite> is not given,
+instead return the probability of every transition from <cite>s</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mdpy.MarkovProcess.reward">
+<code class="descname">reward</code><span class="sig-paren">(</span><em>s</em>, <em>sp</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#MarkovProcess.reward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.MarkovProcess.reward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample a reward from the transition <cite>(s, sp)</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mdpy.MarkovProcess.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>n</em>, <em>s0=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#MarkovProcess.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.MarkovProcess.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the Markov process for <cite>n</cite> steps, return a list of transitions.</p>
+<p>The result has the form:</p>
+<blockquote>
+<div><cite>[{‘s’: s, ‘sp’: sp, ‘r’: r}, …]</cite></div></blockquote>
+<p>So for <cite>ret[t]</cite>, ‘s’ is the state at time <cite>t</cite>, ‘r’ is the reward, and
+‘sp’ is the next state.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mdpy.MarkovProcess.states">
+<code class="descname">states</code><a class="headerlink" href="#mdpy.MarkovProcess.states" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mdpy.MarkovProcess.step">
+<code class="descname">step</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#MarkovProcess.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.MarkovProcess.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transition from a state to its successor, returning <cite>(sp, r)</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mdpy.MarkovProcess.transition">
+<code class="descname">transition</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/mdp.html#MarkovProcess.transition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.MarkovProcess.transition" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.reduce">
+<code class="descclassname">mdpy.</code><code class="descname">reduce</code><span class="sig-paren">(</span><em>function</em>, <em>sequence</em><span class="optional">[</span>, <em>initial</em><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; value<a class="headerlink" href="#mdpy.reduce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a function of two arguments cumulatively to the items of a sequence,
+from left to right, so as to reduce the sequence to a single value.
+For example, reduce(lambda x, y: x+y, [1, 2, 3, 4, 5]) calculates
+((((1+2)+3)+4)+5).  If initial is present, it is placed before the items
+of the sequence in the calculation, and serves as a default when the
+sequence is empty.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.gcd">
+<code class="descclassname">mdpy.</code><code class="descname">gcd</code><span class="sig-paren">(</span><em>x</em>, <em>y</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#mdpy.gcd" title="Permalink to this definition">¶</a></dt>
+<dd><p>greatest common divisor of x and y</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.det">
+<code class="descclassname">mdpy.</code><code class="descname">det</code><span class="sig-paren">(</span><em>a</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/numpy/linalg/linalg.html#det"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.det" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the determinant of an array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a</strong> (<em>(</em><em>..</em><em>, </em><em>M</em><em>, </em><em>M</em><em>) </em><em>array_like</em>) – Input array to compute determinants for.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>det</strong> – Determinant of <cite>a</cite>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">(..) array_like</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-func docutils literal notranslate"><span class="pre">slogdet()</span></code></dt>
+<dd>Another way to representing the determinant, more suitable for large matrices where underflow/overflow may occur.</dd>
+</dl>
+</div>
+<p class="rubric">Notes</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 1.8.0.</span></p>
+</div>
+<p>Broadcasting rules apply, see the <cite>numpy.linalg</cite> documentation for
+details.</p>
+<p>The determinant is computed via LU factorization using the LAPACK
+routine z/dgetrf.</p>
+<p class="rubric">Examples</p>
+<p>The determinant of a 2-D array [[a, b], [c, d]] is ad - bc:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="go">-2.0</span>
+</pre></div>
+</div>
+<p>Computing determinants for a stack of matrices:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span> <span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(3, 2, 2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="go">array([-2., -3., -8.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.pinv">
+<code class="descclassname">mdpy.</code><code class="descname">pinv</code><span class="sig-paren">(</span><em>a</em>, <em>rcond=1e-15</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/numpy/linalg/linalg.html#pinv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.pinv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the (Moore-Penrose) pseudo-inverse of a matrix.</p>
+<p>Calculate the generalized inverse of a matrix using its
+singular-value decomposition (SVD) and including all
+<em>large</em> singular values.</p>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 1.14: </span>Can now operate on stacks of matrices</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>a</strong> (<em>(</em><em>..</em><em>, </em><em>M</em><em>, </em><em>N</em><em>) </em><em>array_like</em>) – Matrix or stack of matrices to be pseudo-inverted.</li>
+<li><strong>rcond</strong> (<em>(</em><em>..</em><em>) </em><em>array_like of float</em>) – Cutoff for small singular values.
+Singular values smaller (in modulus) than
+<cite>rcond</cite> * largest_singular_value (again, in modulus)
+are set to zero. Broadcasts against the stack of matrices</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>B</strong> – The pseudo-inverse of <cite>a</cite>. If <cite>a</cite> is a <cite>matrix</cite> instance, then so
+is <cite>B</cite>.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">(.., N, M) ndarray</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">LinAlgError</span></code> – If the SVD computation does not converge.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>The pseudo-inverse of a matrix A, denoted <span class="math notranslate nohighlight">\(A^+\)</span>, is
+defined as: “the matrix that ‘solves’ [the least-squares problem]
+<span class="math notranslate nohighlight">\(Ax = b\)</span>,” i.e., if <span class="math notranslate nohighlight">\(\bar{x}\)</span> is said solution, then
+<span class="math notranslate nohighlight">\(A^+\)</span> is that matrix such that <span class="math notranslate nohighlight">\(\bar{x} = A^+b\)</span>.</p>
+<p>It can be shown that if <span class="math notranslate nohighlight">\(Q_1 \Sigma Q_2^T = A\)</span> is the singular
+value decomposition of A, then
+<span class="math notranslate nohighlight">\(A^+ = Q_2 \Sigma^+ Q_1^T\)</span>, where <span class="math notranslate nohighlight">\(Q_{1,2}\)</span> are
+orthogonal matrices, <span class="math notranslate nohighlight">\(\Sigma\)</span> is a diagonal matrix consisting
+of A’s so-called singular values, (followed, typically, by
+zeros), and then <span class="math notranslate nohighlight">\(\Sigma^+\)</span> is simply the diagonal matrix
+consisting of the reciprocals of A’s singular values
+(again, followed by zeros). <a href="#id15"><span class="problematic" id="id9">[1]_</span></a></p>
+<p class="rubric">References</p>
+<table class="docutils footnote" frame="void" id="id10" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[1]</td><td>G. Strang, <em>Linear Algebra and Its Applications</em>, 2nd Ed., Orlando,
+FL, Academic Press, Inc., 1980, pp. 139-142.</td></tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>The following example checks that <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">*</span> <span class="pre">a+</span> <span class="pre">*</span> <span class="pre">a</span> <span class="pre">==</span> <span class="pre">a</span></code> and
+<code class="docutils literal notranslate"><span class="pre">a+</span> <span class="pre">*</span> <span class="pre">a</span> <span class="pre">*</span> <span class="pre">a+</span> <span class="pre">==</span> <span class="pre">a+</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">a</span><span class="p">)))</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">B</span><span class="p">)))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.matrix_rank">
+<code class="descclassname">mdpy.</code><code class="descname">matrix_rank</code><span class="sig-paren">(</span><em>M</em>, <em>tol=None</em>, <em>hermitian=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/numpy/linalg/linalg.html#matrix_rank"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.matrix_rank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return matrix rank of array using SVD method</p>
+<p>Rank of the array is the number of singular values of the array that are
+greater than <cite>tol</cite>.</p>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 1.14: </span>Can now operate on stacks of matrices</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>M</strong> (<em>{</em><em>(</em><em>M</em><em>,</em><em>)</em><em>, </em><em>(</em><em>..</em><em>, </em><em>M</em><em>, </em><em>N</em><em>)</em><em>} array_like</em>) – input vector or stack of matrices</li>
+<li><strong>tol</strong> (<em>(</em><em>..</em><em>) </em><em>array_like</em><em>, </em><em>float</em><em>, </em><em>optional</em>) – <p>threshold below which SVD values are considered zero. If <cite>tol</cite> is
+None, and <code class="docutils literal notranslate"><span class="pre">S</span></code> is an array with singular values for <cite>M</cite>, and
+<code class="docutils literal notranslate"><span class="pre">eps</span></code> is the epsilon value for datatype of <code class="docutils literal notranslate"><span class="pre">S</span></code>, then <cite>tol</cite> is
+set to <code class="docutils literal notranslate"><span class="pre">S.max()</span> <span class="pre">*</span> <span class="pre">max(M.shape)</span> <span class="pre">*</span> <span class="pre">eps</span></code>.</p>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 1.14: </span>Broadcasted against the stack of matrices</p>
+</div>
+</li>
+<li><strong>hermitian</strong> (<em>bool</em><em>, </em><em>optional</em>) – <p>If True, <cite>M</cite> is assumed to be Hermitian (symmetric if real-valued),
+enabling a more efficient method for finding singular values.
+Defaults to False.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 1.14.</span></p>
+</div>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>The default threshold to detect rank deficiency is a test on the magnitude
+of the singular values of <cite>M</cite>.  By default, we identify singular values less
+than <code class="docutils literal notranslate"><span class="pre">S.max()</span> <span class="pre">*</span> <span class="pre">max(M.shape)</span> <span class="pre">*</span> <span class="pre">eps</span></code> as indicating rank deficiency (with
+the symbols defined above). This is the algorithm MATLAB uses [1].  It also
+appears in <em>Numerical recipes</em> in the discussion of SVD solutions for linear
+least squares [2].</p>
+<p>This default threshold is designed to detect rank deficiency accounting for
+the numerical errors of the SVD computation.  Imagine that there is a column
+in <cite>M</cite> that is an exact (in floating point) linear combination of other
+columns in <cite>M</cite>. Computing the SVD on <cite>M</cite> will not produce a singular value
+exactly equal to 0 in general: any difference of the smallest SVD value from
+0 will be caused by numerical imprecision in the calculation of the SVD.
+Our threshold for small SVD values takes this numerical imprecision into
+account, and the default threshold will detect such numerical rank
+deficiency.  The threshold may declare a matrix <cite>M</cite> rank deficient even if
+the linear combination of some columns of <cite>M</cite> is not exactly equal to
+another column of <cite>M</cite> but only numerically very close to another column of
+<cite>M</cite>.</p>
+<p>We chose our default threshold because it is in wide use.  Other thresholds
+are possible.  For example, elsewhere in the 2007 edition of <em>Numerical
+recipes</em> there is an alternative threshold of <code class="docutils literal notranslate"><span class="pre">S.max()</span> <span class="pre">*</span>
+<span class="pre">np.finfo(M.dtype).eps</span> <span class="pre">/</span> <span class="pre">2.</span> <span class="pre">*</span> <span class="pre">np.sqrt(m</span> <span class="pre">+</span> <span class="pre">n</span> <span class="pre">+</span> <span class="pre">1.)</span></code>. The authors describe
+this threshold as being based on “expected roundoff error” (p 71).</p>
+<p>The thresholds above deal with floating point roundoff error in the
+calculation of the SVD.  However, you may have more information about the
+sources of error in <cite>M</cite> that would make you consider other tolerance values
+to detect <em>effective</em> rank deficiency.  The most useful measure of the
+tolerance depends on the operations you intend to use on your matrix.  For
+example, if your data come from uncertain measurements with uncertainties
+greater than floating point epsilon, choosing a tolerance near that
+uncertainty may be preferable.  The tolerance may be absolute if the
+uncertainties are absolute rather than relative.</p>
+<p class="rubric">References</p>
+<table class="docutils footnote" frame="void" id="id11" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[1]</td><td>MATLAB reference documention, “Rank”
+<a class="reference external" href="http://www.mathworks.com/help/techdoc/ref/rank.html">http://www.mathworks.com/help/techdoc/ref/rank.html</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id12" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[2]</td><td>W. H. Press, S. A. Teukolsky, W. T. Vetterling and B. P. Flannery,
+“Numerical Recipes (3rd edition)”, Cambridge University Press, 2007,
+page 795.</td></tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="k">import</span> <span class="n">matrix_rank</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span> <span class="c1"># Full rank matrix</span>
+<span class="go">4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">I</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span> <span class="n">I</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span> <span class="c1"># rank deficient matrix</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">I</span><span class="p">)</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">4</span><span class="p">,)))</span> <span class="c1"># 1 dimension - rank 1 unless all 0</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">4</span><span class="p">,)))</span>
+<span class="go">0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.norm">
+<code class="descclassname">mdpy.</code><code class="descname">norm</code><span class="sig-paren">(</span><em>x</em>, <em>ord=None</em>, <em>axis=None</em>, <em>keepdims=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/numpy/linalg/linalg.html#norm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matrix or vector norm.</p>
+<p>This function is able to return one of eight different matrix norms,
+or one of an infinite number of vector norms (described below), depending
+on the value of the <code class="docutils literal notranslate"><span class="pre">ord</span></code> parameter.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>array_like</em>) – Input array.  If <cite>axis</cite> is None, <cite>x</cite> must be 1-D or 2-D.</li>
+<li><strong>ord</strong> (<em>{non-zero int</em><em>, </em><em>inf</em><em>, </em><em>-inf</em><em>, </em><em>'fro'</em><em>, </em><em>'nuc'}</em><em>, </em><em>optional</em>) – Order of the norm (see table under <code class="docutils literal notranslate"><span class="pre">Notes</span></code>). inf means numpy’s
+<cite>inf</cite> object.</li>
+<li><strong>axis</strong> (<em>{int</em><em>, </em><em>2-tuple of ints</em><em>, </em><em>None}</em><em>, </em><em>optional</em>) – If <cite>axis</cite> is an integer, it specifies the axis of <cite>x</cite> along which to
+compute the vector norms.  If <cite>axis</cite> is a 2-tuple, it specifies the
+axes that hold 2-D matrices, and the matrix norms of these matrices
+are computed.  If <cite>axis</cite> is None then either a vector norm (when <cite>x</cite>
+is 1-D) or a matrix norm (when <cite>x</cite> is 2-D) is returned.</li>
+<li><strong>keepdims</strong> (<em>bool</em><em>, </em><em>optional</em>) – <p>If this is set to True, the axes which are normed over are left in the
+result as dimensions with size one.  With this option the result will
+broadcast correctly against the original <cite>x</cite>.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 1.10.0.</span></p>
+</div>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>n</strong> – Norm of the matrix or vector(s).</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float or ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>For values of <code class="docutils literal notranslate"><span class="pre">ord</span> <span class="pre">&lt;=</span> <span class="pre">0</span></code>, the result is, strictly speaking, not a
+mathematical ‘norm’, but it may still be useful for various numerical
+purposes.</p>
+<p>The following norms can be calculated:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="47%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">ord</th>
+<th class="head">norm for matrices</th>
+<th class="head">norm for vectors</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>None</td>
+<td>Frobenius norm</td>
+<td>2-norm</td>
+</tr>
+<tr class="row-odd"><td>‘fro’</td>
+<td>Frobenius norm</td>
+<td>–</td>
+</tr>
+<tr class="row-even"><td>‘nuc’</td>
+<td>nuclear norm</td>
+<td>–</td>
+</tr>
+<tr class="row-odd"><td>inf</td>
+<td>max(sum(abs(x), axis=1))</td>
+<td>max(abs(x))</td>
+</tr>
+<tr class="row-even"><td>-inf</td>
+<td>min(sum(abs(x), axis=1))</td>
+<td>min(abs(x))</td>
+</tr>
+<tr class="row-odd"><td>0</td>
+<td>–</td>
+<td>sum(x != 0)</td>
+</tr>
+<tr class="row-even"><td>1</td>
+<td>max(sum(abs(x), axis=0))</td>
+<td>as below</td>
+</tr>
+<tr class="row-odd"><td>-1</td>
+<td>min(sum(abs(x), axis=0))</td>
+<td>as below</td>
+</tr>
+<tr class="row-even"><td>2</td>
+<td>2-norm (largest sing. value)</td>
+<td>as below</td>
+</tr>
+<tr class="row-odd"><td>-2</td>
+<td>smallest singular value</td>
+<td>as below</td>
+</tr>
+<tr class="row-even"><td>other</td>
+<td>–</td>
+<td>sum(abs(x)**ord)**(1./ord)</td>
+</tr>
+</tbody>
+</table>
+<p>The Frobenius norm is given by <a href="#id16"><span class="problematic" id="id13">[1]_</span></a>:</p>
+<blockquote>
+<div><span class="math notranslate nohighlight">\(||A||_F = [\sum_{i,j} abs(a_{i,j})^2]^{1/2}\)</span></div></blockquote>
+<p>The nuclear norm is the sum of the singular values.</p>
+<p class="rubric">References</p>
+<table class="docutils footnote" frame="void" id="id14" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[1]</td><td>G. H. Golub and C. F. Van Loan, <em>Matrix Computations</em>,
+Baltimore, MD, Johns Hopkins University Press, 1985, pg. 15</td></tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">linalg</span> <span class="k">as</span> <span class="n">LA</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span> <span class="o">-</span> <span class="mi">4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
+<span class="go">array([-4, -3, -2, -1,  0,  1,  2,  3,  4])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span>
+<span class="go">array([[-4, -3, -2],</span>
+<span class="go">       [-1,  0,  1],</span>
+<span class="go">       [ 2,  3,  4]])</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="go">7.745966692414834</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+<span class="go">7.745966692414834</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="s1">&#39;fro&#39;</span><span class="p">)</span>
+<span class="go">7.745966692414834</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+<span class="go">4.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+<span class="go">9.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+<span class="go">0.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+<span class="go">2.0</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">20.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">7.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">-4.6566128774142013e-010</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">6.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">7.745966692414834</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">7.3484692283495345</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">nan</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">1.8570331885190563e-016</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="go">5.8480354764257312</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">nan</span>
+</pre></div>
+</div>
+<p>Using the <cite>axis</cite> argument to compute vector norms:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="gp">... </span>              <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="go">array([ 1.41421356,  2.23606798,  5.        ])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">array([ 3.74165739,  4.24264069])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">array([ 6.,  6.])</span>
+</pre></div>
+</div>
+<p>Using the <cite>axis</cite> argument to compute matrix norms:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="go">array([  3.74165739,  11.22497216])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]),</span> <span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:])</span>
+<span class="go">(3.7416573867739413, 11.224972160321824)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.as_array">
+<code class="descclassname">mdpy.</code><code class="descname">as_array</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/util.html#as_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.as_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrap a function so that its first argument is converted to an array.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.cols">
+<code class="descclassname">mdpy.</code><code class="descname">cols</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#cols"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.cols" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mdpy.colsum">
+<code class="descclassname">mdpy.</code><code class="descname">colsum</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#colsum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.colsum" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mdpy.rows">
+<code class="descclassname">mdpy.</code><code class="descname">rows</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#rows"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.rows" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mdpy.rowsum">
+<code class="descclassname">mdpy.</code><code class="descname">rowsum</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#rowsum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.rowsum" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mdpy.someones">
+<code class="descclassname">mdpy.</code><code class="descname">someones</code><span class="sig-paren">(</span><em>n</em>, <em>*ones</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#someones"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.someones" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a vector of zeros except for ones at the given indices.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.somezeros">
+<code class="descclassname">mdpy.</code><code class="descname">somezeros</code><span class="sig-paren">(</span><em>n</em>, <em>*zeros</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#somezeros"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.somezeros" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a vector of ones except at particular indices.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.unit">
+<code class="descclassname">mdpy.</code><code class="descname">unit</code><span class="sig-paren">(</span><em>ndim</em>, <em>ix</em>, <em>dtype=&lt;class 'float'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#unit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a unit vector, with the entry at <cite>ix</cite> set to 1.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.normalize">
+<code class="descclassname">mdpy.</code><code class="descname">normalize</code><span class="sig-paren">(</span><em>array</em>, <em>axis=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#normalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize an array along an axis.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.as_stochastic">
+<code class="descclassname">mdpy.</code><code class="descname">as_stochastic</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#as_stochastic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.as_stochastic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mdpy.random_binary">
+<code class="descclassname">mdpy.</code><code class="descname">random_binary</code><span class="sig-paren">(</span><em>num_states</em>, <em>num_features</em>, <em>num_active</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#random_binary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.random_binary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a matrix of random binary features, with <cite>num_states</cite> rows and
+<cite>num_features</cite> columns, each row having <cite>num_active</cite> entries equal to one
+and the rest equal to zero.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.is_pvec">
+<code class="descclassname">mdpy.</code><code class="descname">is_pvec</code><span class="sig-paren">(</span><em>pvec</em>, <em>tol=1e-06</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#is_pvec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.is_pvec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a vector represents a probability distribution.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.has_absorbing">
+<code class="descclassname">mdpy.</code><code class="descname">has_absorbing</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#has_absorbing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.has_absorbing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the transition matrix has absorbing states.</p>
+<p>A state is absorbing if its only outgoing transition is to itself.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.is_aperiodic">
+<code class="descclassname">mdpy.</code><code class="descname">is_aperiodic</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#is_aperiodic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.is_aperiodic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a stochastic matrix is aperiodic.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.is_diagonal">
+<code class="descclassname">mdpy.</code><code class="descname">is_diagonal</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#is_diagonal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.is_diagonal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a matrix is diagonal.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.is_ergodic">
+<code class="descclassname">mdpy.</code><code class="descname">is_ergodic</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#is_ergodic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.is_ergodic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the matrix is ergodic (irreducible and aperiodic).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.is_matrix">
+<code class="descclassname">mdpy.</code><code class="descname">is_matrix</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#is_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.is_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test that an array is a matrix.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.is_nonnegative">
+<code class="descclassname">mdpy.</code><code class="descname">is_nonnegative</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#is_nonnegative"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.is_nonnegative" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a matrix is nonnegative.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.is_periodic">
+<code class="descclassname">mdpy.</code><code class="descname">is_periodic</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#is_periodic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.is_periodic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the transition matrix is periodic.</p>
+<p>A matrix is periodic if it has a period greater than <cite>2</cite>, that is, if it</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.is_distribution">
+<code class="descclassname">mdpy.</code><code class="descname">is_distribution</code><span class="sig-paren">(</span><em>vec</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#is_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.is_distribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a vector is a probability distribution</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.is_reducible">
+<code class="descclassname">mdpy.</code><code class="descname">is_reducible</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#is_reducible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.is_reducible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the matrix is reducible. That is, if all states are part of the
+same communicating class (can be reached from each other).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.is_square">
+<code class="descclassname">mdpy.</code><code class="descname">is_square</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#is_square"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.is_square" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure that an array is a 2-D square matrix.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.is_stochastic">
+<code class="descclassname">mdpy.</code><code class="descname">is_stochastic</code><span class="sig-paren">(</span><em>mat</em>, <em>tol=1e-06</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#is_stochastic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.is_stochastic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a matrix is (right) stochastic.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.is_substochastic">
+<code class="descclassname">mdpy.</code><code class="descname">is_substochastic</code><span class="sig-paren">(</span><em>mat</em>, <em>tol=1e-06</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#is_substochastic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.is_substochastic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a matrix is (right) substochastic.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.find_terminals">
+<code class="descclassname">mdpy.</code><code class="descname">find_terminals</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#find_terminals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.find_terminals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find terminal states in a transition matrix.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.find_nonterminals">
+<code class="descclassname">mdpy.</code><code class="descname">find_nonterminals</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#find_nonterminals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.find_nonterminals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find nonterminal states in a transition matrix.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.get_period">
+<code class="descclassname">mdpy.</code><code class="descname">get_period</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#get_period"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.get_period" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the period of the stochastic matrix <cite>mat</cite>.</p>
+<p>Uses <cite>networkx</cite> to find the cycles in the graph and computes the GCD over
+their lengths.</p>
+<p class="rubric">Notes</p>
+<p>The period is defined as the GCD of all possible return times to a state,
+or the integer that divides the length of every cycle in the transition
+graph.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.approx_stationary">
+<code class="descclassname">mdpy.</code><code class="descname">approx_stationary</code><span class="sig-paren">(</span><em>mat</em>, <em>s0=None</em>, <em>tol=1e-06</em>, <em>iterlimit=100000</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#approx_stationary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.approx_stationary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the approximate stationary distribution of a stochastic matrix,
+by repeatedly multiplying a probability vector by the matrix until it
+converges.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.stationary">
+<code class="descclassname">mdpy.</code><code class="descname">stationary</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#stationary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.stationary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the stationary distribution for transition matrix <cite>mat</cite>, via
+computing the solution to the system of equations (P.T - I)*pi = 0.</p>
+<p>NB: Assumes <cite>mat</cite> is ergodic (aperiodic and irreducible).
+Could do with LU factorization – c.f. 54-14 in Handbook of Linear Algebra</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.stationary_matrix">
+<code class="descclassname">mdpy.</code><code class="descname">stationary_matrix</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#stationary_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.stationary_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the matrix <cite>A</cite> where each row is the stationary distribution for
+the given matrix <cite>mat</cite>.</p>
+<p>Computes the stationary distribution for transition matrix <cite>mat</cite>, via
+computing the solution to the system of equations (P.T - I)*pi = 0.</p>
+<p>NB: Assumes <cite>mat</cite> is ergodic (aperiodic and irreducible).
+Could do with LU factorization – c.f. 54-14 in Handbook of Linear Algebra</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.get_all_stationary">
+<code class="descclassname">mdpy.</code><code class="descname">get_all_stationary</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#get_all_stationary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.get_all_stationary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute /all/ stationary states for transition matrix <cite>mat</cite>, by
+finding the left eigenvectors with an associated eigenvalue of <cite>1</cite>.</p>
+<p>NB: Has a lot of transposing going on in order to accomodate numpy.
+NB: Uses <cite>np.isclose</cite> for checking whether eigenvalues are 1.
+NB: Tries to ensure it returns real-valued left eigenvectors.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.distribution_matrix">
+<code class="descclassname">mdpy.</code><code class="descname">distribution_matrix</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#distribution_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.distribution_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the stationary distribution for a matrix, and return the
+diagonal matrix with the stationary distribution along its diagonal.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.matrix_series">
+<code class="descclassname">mdpy.</code><code class="descname">matrix_series</code><span class="sig-paren">(</span><em>mat</em>, <em>n</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#matrix_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.matrix_series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the matrix series for <cite>n</cite> terms using matrix <cite>mat</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.matrix_power">
+<code class="descclassname">mdpy.</code><code class="descname">matrix_power</code><span class="sig-paren">(</span><em>mat</em>, <em>n</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/linalg.html#matrix_power"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.matrix_power" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the matrix <cite>mat</cite> raised to the power <cite>n</cite>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="mdpy.Number">
+<em class="property">class </em><code class="descclassname">mdpy.</code><code class="descname">Number</code><a class="reference internal" href="../_modules/numbers.html#Number"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.Number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>All numbers inherit from this class.</p>
+<p>If you just want to check if an argument x is a number, without
+caring what kind, use isinstance(x, Number).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.as_diag">
+<code class="descclassname">mdpy.</code><code class="descname">as_diag</code><span class="sig-paren">(</span><em>elem</em>, <em>n</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/util.html#as_diag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.as_diag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert <cite>elem</cite> to a diagonal matrix</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.mc_return">
+<code class="descclassname">mdpy.</code><code class="descname">mc_return</code><span class="sig-paren">(</span><em>P</em>, <em>r</em>, <em>Γ</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#mc_return"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.mc_return" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the expected Monte-Carlo return for the Markov chain defined by
+<cite>P</cite> with expected reward <cite>r</cite>.
+This is the result of solving the Bellman equation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>r</strong> (<em>The expected reward vector.</em>) – Element <cite>r[i]</cite> is defined to be the expected reward over the
+transitions from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.ls_weights">
+<code class="descclassname">mdpy.</code><code class="descname">ls_weights</code><span class="sig-paren">(</span><em>P</em>, <em>r</em>, <em>Γ</em>, <em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#ls_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.ls_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the least-squares weights for the MDP given feature matrix <cite>X</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>r</strong> (<em>The expected reward vector.</em>) – Element <cite>r[i]</cite> is defined to be the expected reward over the
+transitions from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>X</strong> (<em>Matrix</em>) – The feature matrix, whose rows correspond to the feature representation
+for each state.
+For example, <cite>X[i]</cite> provides the features for state <cite>i</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.ls_values">
+<code class="descclassname">mdpy.</code><code class="descname">ls_values</code><span class="sig-paren">(</span><em>P</em>, <em>r</em>, <em>Γ</em>, <em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#ls_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.ls_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the state-values under least-squares function approximation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>r</strong> (<em>The expected reward vector.</em>) – Element <cite>r[i]</cite> is defined to be the expected reward over the
+transitions from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>X</strong> (<em>Matrix</em>) – The feature matrix, whose rows correspond to the feature representation
+for each state.
+For example, <cite>X[i]</cite> provides the features for state <cite>i</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.td_weights">
+<code class="descclassname">mdpy.</code><code class="descname">td_weights</code><span class="sig-paren">(</span><em>P</em>, <em>r</em>, <em>Γ</em>, <em>Λ</em>, <em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#td_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.td_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the weights found at the TD fixed point for the MDP under
+linear function approximation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>r</strong> (<em>The expected reward vector.</em>) – Element <cite>r[i]</cite> is defined to be the expected reward over the
+transitions from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>Λ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent bootstrapping matrix, a diagonal matrix whose
+(i,i)-th entry is the bootstrapping (λ value) for state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>X</strong> (<em>Matrix</em>) – The feature matrix, whose rows correspond to the feature representation
+for each state.
+For example, <cite>X[i]</cite> provides the features for state <cite>i</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>If the feature matrix <cite>X</cite> is of the same rank as <cite>P</cite>, then the result should
+be the same as computing the exact value function.
+If <cite>Λ = diag([1, 1, …, 1])</cite>, then the result should be the same as
+computing the weights under least-squares.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.td_values">
+<code class="descclassname">mdpy.</code><code class="descname">td_values</code><span class="sig-paren">(</span><em>P</em>, <em>r</em>, <em>Γ</em>, <em>Λ</em>, <em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#td_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.td_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute state values found at the TD fixed point for the MDP under
+linear function approximation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>r</strong> (<em>The expected reward vector.</em>) – Element <cite>r[i]</cite> is defined to be the expected reward over the
+transitions from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>Λ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent bootstrapping matrix, a diagonal matrix whose
+(i,i)-th entry is the bootstrapping (λ value) for state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>X</strong> (<em>Matrix</em>) – The feature matrix, whose rows correspond to the feature representation
+for each state.
+For example, <cite>X[i]</cite> provides the features for state <cite>i</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.delta_matrix">
+<code class="descclassname">mdpy.</code><code class="descname">delta_matrix</code><span class="sig-paren">(</span><em>R</em>, <em>Γ</em>, <em>v</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#delta_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.delta_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the matrix whose (i,j)-th entry represents the expected TD-error
+for transitioning to state <cite>j</cite> from state <cite>i</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.expected_delta">
+<code class="descclassname">mdpy.</code><code class="descname">expected_delta</code><span class="sig-paren">(</span><em>P</em>, <em>R</em>, <em>Γ</em>, <em>v</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#expected_delta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.expected_delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>The expected TD-error given transitions <cite>P</cite>, reward matrix <cite>R</cite>,
+discount matrix <cite>Γ</cite>, and values <cite>v</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.expected_reward">
+<code class="descclassname">mdpy.</code><code class="descname">expected_reward</code><span class="sig-paren">(</span><em>P</em>, <em>R</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#expected_reward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.expected_reward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expected immediate reward given transition matrix <cite>P</cite> and
+expected reward matrix <cite>R</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.lambda_return">
+<code class="descclassname">mdpy.</code><code class="descname">lambda_return</code><span class="sig-paren">(</span><em>P</em>, <em>r</em>, <em>Γ</em>, <em>Λ</em>, <em>v_hat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#lambda_return"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.lambda_return" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the expected λ-return for the MDP.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>Λ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent bootstrapping matrix, a diagonal matrix whose
+(i,i)-th entry is the bootstrapping (λ value) for state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>X</strong> (<em>Matrix</em>) – The feature matrix, whose rows correspond to the feature representation
+for each state.
+For example, <cite>X[i]</cite> provides the features for state <cite>i</cite>.</li>
+<li><strong>r</strong> (<em>Vector</em><em>[</em><em>float</em><em>]</em><em></em>) – Element <cite>r[i]</cite> is defined to be the expected reward over the
+transitions from state <cite>i</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>If <cite>v_hat</cite> is the “true” value function (i.e., the values found by solving
+the Bellman equation) then the λ-return will be the same as the Monte-Carlo
+return (which in expectation <em>is</em> the true value function).</p>
+<p>The λ-return is defined via:</p>
+<blockquote>
+<div>G_{t}^{λ} = R_{t+1} + γ_{t+1}( (1-λ_{t+1}) v(S_{t+1}) + λ_{t+1}G_{t+1}^{λ}</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.etd_weights">
+<code class="descclassname">mdpy.</code><code class="descname">etd_weights</code><span class="sig-paren">(</span><em>P</em>, <em>r</em>, <em>Γ</em>, <em>Λ</em>, <em>X</em>, <em>ivec</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#etd_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.etd_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the fixed-point of ETD(λ) by solving its Bellman equation.
+The weight vector returned corresponds to the asymptotic weights for found
+by Emphatic TD(λ).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>r</strong> (<em>The expected reward vector.</em>) – Element <cite>r[i]</cite> is defined to be the expected reward over the
+transitions from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>Λ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent bootstrapping matrix, a diagonal matrix whose
+(i,i)-th entry is the bootstrapping (λ value) for state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>X</strong> (<em>Matrix</em>) – The feature matrix, whose rows correspond to the feature representation
+for each state.
+For example, <cite>X[i]</cite> provides the features for state <cite>i</cite>.</li>
+<li><strong>ivec</strong> (<em>Vector</em><em>[</em><em>float</em><em>]</em>) – The per-state “interest” vector.
+For example, <cite>ivec[i]</cite> is the interest allocated to state <cite>i</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.etd_values">
+<code class="descclassname">mdpy.</code><code class="descname">etd_values</code><span class="sig-paren">(</span><em>P</em>, <em>r</em>, <em>Γ</em>, <em>Λ</em>, <em>X</em>, <em>ivec</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#etd_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.etd_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the state-values found by Emphatic TD(λ) by solving the
+appropriate Bellman equation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>r</strong> (<em>The expected reward vector.</em>) – Element <cite>r[i]</cite> is defined to be the expected reward over the
+transitions from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>Λ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent bootstrapping matrix, a diagonal matrix whose
+(i,i)-th entry is the bootstrapping (λ value) for state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>X</strong> (<em>Matrix</em>) – The feature matrix, whose rows correspond to the feature representation
+for each state.
+For example, <cite>X[i]</cite> provides the features for state <cite>i</cite>.</li>
+<li><strong>ivec</strong> (<em>Vector</em><em>[</em><em>float</em><em>]</em>) – The per-state “interest” vector.
+For example, <cite>ivec[i]</cite> is the interest allocated to state <cite>i</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.followon">
+<code class="descclassname">mdpy.</code><code class="descname">followon</code><span class="sig-paren">(</span><em>P</em>, <em>Γ</em>, <em>ivec</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#followon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.followon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the followon trace’s expected value for each state.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.potential">
+<code class="descclassname">mdpy.</code><code class="descname">potential</code><span class="sig-paren">(</span><em>A</em>, <em>tol=1e-06</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.potential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the potential matrix for <cite>A</cite>, which is the sum of the matrix
+geometric series (also referred to as the “Neumann series”.</p>
+<blockquote>
+<div>B = sum_{k=0}^{infty} A^k = (I - A)^{-1}</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>A</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – A square matrix such that <cite>(I - A)</cite> is invertible.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.warp">
+<code class="descclassname">mdpy.</code><code class="descname">warp</code><span class="sig-paren">(</span><em>P</em>, <em>Γ</em>, <em>Λ</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#warp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.warp" title="Permalink to this definition">¶</a></dt>
+<dd><p>The matrix which warps the distribution due to gamma and lambda.
+warp = (I - P_{pi} Gamma Lambda)^{-1}</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>Λ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent bootstrapping matrix, a diagonal matrix whose
+(i,i)-th entry is the bootstrapping (λ value) for state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>The term “warp matrix” is non-standard terminology, but is somewhat
+appropriate because it represents the asymptotic result of bootstrapping
+and discounting in the MDP.
+The i-th row-sum reflects the influence of the subsequent states on state
+<cite>i</cite>, while the j-th column sum reflects the influence of state <cite>j</cite> on its
+successors.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.sobel_variance">
+<code class="descclassname">mdpy.</code><code class="descname">sobel_variance</code><span class="sig-paren">(</span><em>P</em>, <em>R</em>, <em>Γ</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#sobel_variance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.sobel_variance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the variance of the return using Sobel’s method for a Markov
+process.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning from state <cite>i</cite> to state <cite>j</cite> .</li>
+<li><strong>R</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – Element <cite>R[i,j]</cite> is defined to be the expected reward for transitioning
+from state <cite>i</cite> to state <cite>j</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">This function doesn’t work if rewards are a function of state, action, and
+the successor state.
+It is easy to fix in a haphazard way, via summing over (s,a,s’) for P and
+R, but I would prefer to handle it via something more generic like numpy’s
+<cite>einsum</cite>.</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.second_moment">
+<code class="descclassname">mdpy.</code><code class="descname">second_moment</code><span class="sig-paren">(</span><em>P</em>, <em>R</em>, <em>Γ</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#second_moment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.second_moment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the second moment of the return using the method from White and
+White for a Markov process.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning from state <cite>i</cite> to state <cite>j</cite> .</li>
+<li><strong>R</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The expected reward matrix.
+Element <cite>R[i,j]</cite> is defined to be the expected reward for transitioning
+from state <cite>i</cite> to state <cite>j</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">This function doesn’t work if rewards are a function of state, action, and
+the successor state.
+It is easy to fix in a haphazard way, via summing over (s,a,s’) for P and
+R, but I would prefer to handle it via something more generic like numpy’s
+<cite>einsum</cite>.</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.lambda_second_moment">
+<code class="descclassname">mdpy.</code><code class="descname">lambda_second_moment</code><span class="sig-paren">(</span><em>P</em>, <em>R</em>, <em>Γ</em>, <em>Λ</em>, <em>v_hat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#lambda_second_moment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.lambda_second_moment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the second moment of the λ-return using the method from White &amp;
+White for a Markov process.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning from   state <cite>i</cite> to state <cite>j</cite> .</li>
+<li><strong>R</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The expected reward matrix.
+Element <cite>R[i,j]</cite> is defined to be the expected reward for transitioning
+from state <cite>i</cite> to state <cite>j</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>Λ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent bootstrapping matrix, a diagonal matrix whose
+(i,i)-th entry is the bootstrapping (λ value) for state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>X</strong> (<em>Matrix</em>) – The feature matrix, whose rows correspond to the feature representation
+for each state.
+For example, <cite>X[i]</cite> provides the features for state <cite>i</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Because we are using the λ-return, the choice of <cite>v_hat</cite> influences the
+second moment.
+The λ-return is defined via:</p>
+<blockquote>
+<div>G_{t}^{λ} = R_{t+1} + γ_{t+1}( (1-λ_{t+1}) v(S_{t+1}) + λ_{t+1}G_{t+1}^{λ}</div></blockquote>
+<div class="admonition-todo admonition" id="index-2">
+<p class="first admonition-title">Todo</p>
+<p class="last">This function doesn’t work if rewards are a function of state, action, and
+the successor state.
+It is easy to fix in a haphazard way, via summing over (s,a,s’) for P and
+R, but I would prefer to handle it via something more generic like numpy’s
+<cite>einsum</cite>.</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.from_dict">
+<code class="descclassname">mdpy.</code><code class="descname">from_dict</code><span class="sig-paren">(</span><em>dct</em>, <em>shape</em>, <em>default=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/util.html#from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make an array from a dictionary whose keys are tuples corresponding
+to a single element’s index in the array.</p>
+<p class="rubric">Examples</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">dct</span> <span class="pre">=</span> <span class="pre">{(0,</span> <span class="pre">0):</span> <span class="pre">3,</span> <span class="pre">(0,</span> <span class="pre">1):</span> <span class="pre">2,</span> <span class="pre">(1,</span> <span class="pre">1):</span> <span class="pre">1}</span>
+<span class="pre">&gt;&gt;&gt;</span> <span class="pre">from_dct(dct,</span> <span class="pre">(2,</span> <span class="pre">2),</span> <span class="pre">default=4)</span>
+<span class="pre">#</span> <span class="pre">array([[3,</span> <span class="pre">2],</span> <span class="pre">[4,</span> <span class="pre">1]])</span>
+<span class="pre">`</span></code></p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">mdpy package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-mdpy">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/mdpy.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, rldotai.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/api/mdpy.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

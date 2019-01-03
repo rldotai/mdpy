@@ -1,0 +1,7 @@
+mdpy.solve module
+=================
+
+.. automodule:: mdpy.solve
+    :members:
+    :undoc-members:
+    :show-inheritance:

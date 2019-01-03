@@ -1,0 +1,644 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>mdpy.solve &#8212; mdpy 0.1.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for mdpy.solve</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">reduce</span>
+<span class="kn">from</span> <span class="nn">numbers</span> <span class="k">import</span> <span class="n">Number</span>
+<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="k">import</span> <span class="n">det</span><span class="p">,</span> <span class="n">pinv</span><span class="p">,</span> <span class="n">matrix_rank</span><span class="p">,</span> <span class="n">norm</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">linalg</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="k">import</span> <span class="n">as_array</span><span class="p">,</span> <span class="n">as_diag</span>
+
+
+<span class="c1"># TODO: Change assertions to exceptions</span>
+<span class="c1"># TODO: Add tests</span>
+<span class="c1"># TODO: Convert to new matrix multiplication operator</span>
+
+<span class="c1"># TODO: Allow specifying Γ as a vector, constant, or maybe even dict?</span>
+<div class="viewcode-block" id="mc_return"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.mc_return">[docs]</a><span class="k">def</span> <span class="nf">mc_return</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">Γ</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the expected Monte-Carlo return for the Markov chain defined by</span>
+<span class="sd">    `P` with expected reward `r`.</span>
+<span class="sd">    This is the result of solving the Bellman equation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    P : Matrix[float]</span>
+<span class="sd">        The transition matrix, with `P[i,j]` defined as the probability of</span>
+<span class="sd">        transitioning to state `j` from state `i`.</span>
+<span class="sd">    r : The expected reward vector.</span>
+<span class="sd">        Element `r[i]` is defined to be the expected reward over the</span>
+<span class="sd">        transitions from state `i`.</span>
+<span class="sd">    Γ : Matrix[float]</span>
+<span class="sd">        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th</span>
+<span class="sd">        entry is the discount applied to state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">is_stochastic</span><span class="p">(</span><span class="n">P</span><span class="p">))</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">Γ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Γ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">P</span> <span class="o">@</span> <span class="n">Γ</span><span class="p">)</span> <span class="o">@</span> <span class="n">r</span></div>
+
+<span class="c1"># TODO: Allow specifying Γ as a vector, constant, or maybe even dict?</span>
+<div class="viewcode-block" id="ls_weights"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.ls_weights">[docs]</a><span class="k">def</span> <span class="nf">ls_weights</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the least-squares weights for the MDP given feature matrix `X`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    P : Matrix[float]</span>
+<span class="sd">        The transition matrix, with `P[i,j]` defined as the probability of</span>
+<span class="sd">        transitioning to state `j` from state `i`.</span>
+<span class="sd">    r : The expected reward vector.</span>
+<span class="sd">        Element `r[i]` is defined to be the expected reward over the</span>
+<span class="sd">        transitions from state `i`.</span>
+<span class="sd">    Γ : Matrix[float]</span>
+<span class="sd">        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th</span>
+<span class="sd">        entry is the discount applied to state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+<span class="sd">    X : Matrix</span>
+<span class="sd">        The feature matrix, whose rows correspond to the feature representation</span>
+<span class="sd">        for each state.</span>
+<span class="sd">        For example, `X[i]` provides the features for state `i`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">is_stochastic</span><span class="p">(</span><span class="n">P</span><span class="p">))</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">))</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">Γ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Γ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">mc_return</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">Γ</span><span class="p">)</span>
+    <span class="n">dist</span>  <span class="o">=</span> <span class="n">linalg</span><span class="o">.</span><span class="n">stationary</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">D</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">D</span> <span class="o">@</span> <span class="n">X</span><span class="p">)</span> <span class="o">@</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">D</span> <span class="o">@</span> <span class="n">value</span></div>
+
+<span class="c1"># TODO: Allow specifying Γ as a vector, constant, or maybe even dict?</span>
+<div class="viewcode-block" id="ls_values"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.ls_values">[docs]</a><span class="k">def</span> <span class="nf">ls_values</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the state-values under least-squares function approximation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    P : Matrix[float]</span>
+<span class="sd">        The transition matrix, with `P[i,j]` defined as the probability of</span>
+<span class="sd">        transitioning to state `j` from state `i`.</span>
+<span class="sd">    r : The expected reward vector.</span>
+<span class="sd">        Element `r[i]` is defined to be the expected reward over the</span>
+<span class="sd">        transitions from state `i`.</span>
+<span class="sd">    Γ : Matrix[float]</span>
+<span class="sd">        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th</span>
+<span class="sd">        entry is the discount applied to state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+<span class="sd">    X : Matrix</span>
+<span class="sd">        The feature matrix, whose rows correspond to the feature representation</span>
+<span class="sd">        for each state.</span>
+<span class="sd">        For example, `X[i]` provides the features for state `i`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">Γ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Γ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">ls_weights</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">X</span> <span class="o">@</span> <span class="n">weights</span></div>
+
+<span class="c1"># TODO: Allow specifying Γ, Λ, as a vector, constant, or maybe even dict?</span>
+<div class="viewcode-block" id="td_weights"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.td_weights">[docs]</a><span class="k">def</span> <span class="nf">td_weights</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">Λ</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the weights found at the TD fixed point for the MDP under</span>
+<span class="sd">    linear function approximation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    P : Matrix[float]</span>
+<span class="sd">        The transition matrix, with `P[i,j]` defined as the probability of</span>
+<span class="sd">        transitioning to state `j` from state `i`.</span>
+<span class="sd">    r : The expected reward vector.</span>
+<span class="sd">        Element `r[i]` is defined to be the expected reward over the</span>
+<span class="sd">        transitions from state `i`.</span>
+<span class="sd">    Γ : Matrix[float]</span>
+<span class="sd">        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th</span>
+<span class="sd">        entry is the discount applied to state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+<span class="sd">    Λ : Matrix[float]</span>
+<span class="sd">        The state-dependent bootstrapping matrix, a diagonal matrix whose</span>
+<span class="sd">        (i,i)-th entry is the bootstrapping (λ value) for state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+<span class="sd">    X : Matrix</span>
+<span class="sd">        The feature matrix, whose rows correspond to the feature representation</span>
+<span class="sd">        for each state.</span>
+<span class="sd">        For example, `X[i]` provides the features for state `i`.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    If the feature matrix `X` is of the same rank as `P`, then the result should</span>
+<span class="sd">    be the same as computing the exact value function.</span>
+<span class="sd">    If `Λ = diag([1, 1, ..., 1])`, then the result should be the same as</span>
+<span class="sd">    computing the weights under least-squares.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">is_stochastic</span><span class="p">(</span><span class="n">P</span><span class="p">))</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">))</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">Γ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Γ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+    <span class="n">Λ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Λ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+
+    <span class="c1"># Calculate intermediate quantities</span>
+    <span class="n">I</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">linalg</span><span class="o">.</span><span class="n">stationary</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">D</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span>
+
+    <span class="c1"># Set up and solve the equation</span>
+    <span class="n">r_lm</span> <span class="o">=</span> <span class="n">pinv</span><span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">P</span> <span class="o">@</span> <span class="n">Γ</span> <span class="o">@</span> <span class="n">Λ</span><span class="p">)</span> <span class="o">@</span> <span class="n">r</span>
+    <span class="n">P_lm</span> <span class="o">=</span> <span class="n">I</span> <span class="o">-</span> <span class="n">pinv</span><span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">P</span> <span class="o">@</span> <span class="n">Γ</span> <span class="o">@</span> <span class="n">Λ</span><span class="p">)</span> <span class="o">@</span> <span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">P</span> <span class="o">@</span> <span class="n">Γ</span><span class="p">)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">D</span> <span class="o">@</span> <span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">P_lm</span><span class="p">)</span> <span class="o">@</span> <span class="n">X</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">D</span> <span class="o">@</span> <span class="n">r_lm</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">@</span> <span class="n">b</span></div>
+
+<span class="c1"># TODO: Allow specifying Γ, Λ, as a vector, constant, or maybe even dict?</span>
+<div class="viewcode-block" id="td_values"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.td_values">[docs]</a><span class="k">def</span> <span class="nf">td_values</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">Λ</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute state values found at the TD fixed point for the MDP under</span>
+<span class="sd">    linear function approximation.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    P : Matrix[float]</span>
+<span class="sd">        The transition matrix, with `P[i,j]` defined as the probability of</span>
+<span class="sd">        transitioning to state `j` from state `i`.</span>
+<span class="sd">    r : The expected reward vector.</span>
+<span class="sd">        Element `r[i]` is defined to be the expected reward over the</span>
+<span class="sd">        transitions from state `i`.</span>
+<span class="sd">    Γ : Matrix[float]</span>
+<span class="sd">        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th</span>
+<span class="sd">        entry is the discount applied to state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+<span class="sd">    Λ : Matrix[float]</span>
+<span class="sd">        The state-dependent bootstrapping matrix, a diagonal matrix whose</span>
+<span class="sd">        (i,i)-th entry is the bootstrapping (λ value) for state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+<span class="sd">    X : Matrix</span>
+<span class="sd">        The feature matrix, whose rows correspond to the feature representation</span>
+<span class="sd">        for each state.</span>
+<span class="sd">        For example, `X[i]` provides the features for state `i`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">X</span> <span class="o">@</span> <span class="n">td_weights</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">Λ</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="delta_matrix"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.delta_matrix">[docs]</a><span class="k">def</span> <span class="nf">delta_matrix</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns the matrix whose (i,j)-th entry represents the expected TD-error</span>
+<span class="sd">    for transitioning to state `j` from state `i`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">is_square</span><span class="p">(</span><span class="n">R</span><span class="p">))</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+    <span class="n">Γ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Γ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">ns</span><span class="p">,</span> <span class="n">ns</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndindex</span><span class="p">(</span><span class="o">*</span><span class="n">ret</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
+        <span class="n">ret</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">Γ</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="n">v</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+<div class="viewcode-block" id="expected_delta"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.expected_delta">[docs]</a><span class="k">def</span> <span class="nf">expected_delta</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The expected TD-error given transitions `P`, reward matrix `R`,</span>
+<span class="sd">    discount matrix `Γ`, and values `v`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">is_stochastic</span><span class="p">(</span><span class="n">P</span><span class="p">))</span>
+    <span class="n">Δ</span> <span class="o">=</span> <span class="n">delta_matrix</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">P</span><span class="o">*</span><span class="n">Δ</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="expected_reward"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.expected_reward">[docs]</a><span class="k">def</span> <span class="nf">expected_reward</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Expected immediate reward given transition matrix `P` and</span>
+<span class="sd">    expected reward matrix `R`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">is_stochastic</span><span class="p">(</span><span class="n">P</span><span class="p">))</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">R</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">P</span><span class="p">,</span><span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+<span class="c1"># TODO: Allow specifying Γ, Λ, as a vector, constant, or maybe even dict?</span>
+<div class="viewcode-block" id="lambda_return"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.lambda_return">[docs]</a><span class="k">def</span> <span class="nf">lambda_return</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">Λ</span><span class="p">,</span> <span class="n">v_hat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the expected λ-return for the MDP.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    P : Matrix[float]</span>
+<span class="sd">        The transition matrix, with `P[i,j]` defined as the probability of</span>
+<span class="sd">        transitioning to state `j` from state `i`.</span>
+<span class="sd">    Γ : Matrix[float]</span>
+<span class="sd">        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th</span>
+<span class="sd">        entry is the discount applied to state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+<span class="sd">    Λ : Matrix[float]</span>
+<span class="sd">        The state-dependent bootstrapping matrix, a diagonal matrix whose</span>
+<span class="sd">        (i,i)-th entry is the bootstrapping (λ value) for state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+<span class="sd">    X : Matrix</span>
+<span class="sd">        The feature matrix, whose rows correspond to the feature representation</span>
+<span class="sd">        for each state.</span>
+<span class="sd">        For example, `X[i]` provides the features for state `i`.</span>
+<span class="sd">    r : Vector[float].</span>
+<span class="sd">        Element `r[i]` is defined to be the expected reward over the</span>
+<span class="sd">        transitions from state `i`.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    If `v_hat` is the &quot;true&quot; value function (i.e., the values found by solving</span>
+<span class="sd">    the Bellman equation) then the λ-return will be the same as the Monte-Carlo</span>
+<span class="sd">    return (which in expectation *is* the true value function).</span>
+
+<span class="sd">    The λ-return is defined via:</span>
+
+<span class="sd">        G_{t}^{λ} = R_{t+1} + γ_{t+1}( (1-λ_{t+1}) v(S_{t+1}) + λ_{t+1}G_{t+1}^{λ}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">is_stochastic</span><span class="p">(</span><span class="n">P</span><span class="p">))</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">Γ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Γ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+    <span class="n">Λ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Λ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+    <span class="c1"># Incorporate next-state&#39;s value into expected reward</span>
+    <span class="n">r_hat</span> <span class="o">=</span> <span class="n">r</span> <span class="o">+</span> <span class="n">P</span> <span class="o">@</span> <span class="n">Γ</span> <span class="o">@</span> <span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">Λ</span><span class="p">)</span> <span class="o">@</span> <span class="n">v_hat</span>
+    <span class="c1"># Solve the Bellman equation</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">P</span> <span class="o">@</span> <span class="n">Γ</span> <span class="o">@</span> <span class="n">Λ</span><span class="p">)</span> <span class="o">@</span> <span class="n">r_hat</span></div>
+
+
+<div class="viewcode-block" id="etd_weights"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.etd_weights">[docs]</a><span class="k">def</span> <span class="nf">etd_weights</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">Λ</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">ivec</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the fixed-point of ETD(λ) by solving its Bellman equation.</span>
+<span class="sd">    The weight vector returned corresponds to the asymptotic weights for found</span>
+<span class="sd">    by Emphatic TD(λ).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    P : Matrix[float]</span>
+<span class="sd">        The transition matrix, with `P[i,j]` defined as the probability of</span>
+<span class="sd">        transitioning to state `j` from state `i`.</span>
+<span class="sd">    r : The expected reward vector.</span>
+<span class="sd">        Element `r[i]` is defined to be the expected reward over the</span>
+<span class="sd">        transitions from state `i`.</span>
+<span class="sd">    Γ : Matrix[float]</span>
+<span class="sd">        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th</span>
+<span class="sd">        entry is the discount applied to state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+<span class="sd">    Λ : Matrix[float]</span>
+<span class="sd">        The state-dependent bootstrapping matrix, a diagonal matrix whose</span>
+<span class="sd">        (i,i)-th entry is the bootstrapping (λ value) for state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+<span class="sd">    X : Matrix</span>
+<span class="sd">        The feature matrix, whose rows correspond to the feature representation</span>
+<span class="sd">        for each state.</span>
+<span class="sd">        For example, `X[i]` provides the features for state `i`.</span>
+<span class="sd">    ivec : Vector[float]</span>
+<span class="sd">        The per-state &quot;interest&quot; vector.</span>
+<span class="sd">        For example, `ivec[i]` is the interest allocated to state `i`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">is_stochastic</span><span class="p">(</span><span class="n">P</span><span class="p">))</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">Γ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Γ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+    <span class="n">Λ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Λ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+
+    <span class="c1"># compute intermediate quantities (could be more efficient)</span>
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+    <span class="n">di</span> <span class="o">=</span> <span class="n">linalg</span><span class="o">.</span><span class="n">stationary</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">*</span> <span class="n">ivec</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">pinv</span><span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">Λ</span> <span class="o">@</span> <span class="n">Γ</span> <span class="o">@</span> <span class="n">P</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">@</span> <span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">Γ</span> <span class="o">@</span> <span class="n">P</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">@</span> <span class="n">di</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+
+    <span class="c1"># solve the equation</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">M</span> <span class="o">@</span> <span class="n">pinv</span><span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">P</span> <span class="o">@</span> <span class="n">Γ</span> <span class="o">@</span> <span class="n">Λ</span><span class="p">)</span> <span class="o">@</span> <span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">P</span> <span class="o">@</span> <span class="n">Γ</span><span class="p">)</span> <span class="o">@</span> <span class="n">X</span>
+    <span class="n">A_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">M</span> <span class="o">@</span> <span class="n">pinv</span><span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">P</span> <span class="o">@</span> <span class="n">Γ</span> <span class="o">@</span> <span class="n">Λ</span><span class="p">)</span> <span class="o">@</span> <span class="n">r</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A_inv</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="etd_values"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.etd_values">[docs]</a><span class="k">def</span> <span class="nf">etd_values</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">Λ</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">ivec</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the state-values found by Emphatic TD(λ) by solving the</span>
+<span class="sd">    appropriate Bellman equation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    P : Matrix[float]</span>
+<span class="sd">        The transition matrix, with `P[i,j]` defined as the probability of</span>
+<span class="sd">        transitioning to state `j` from state `i`.</span>
+<span class="sd">    r : The expected reward vector.</span>
+<span class="sd">        Element `r[i]` is defined to be the expected reward over the</span>
+<span class="sd">        transitions from state `i`.</span>
+<span class="sd">    Γ : Matrix[float]</span>
+<span class="sd">        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th</span>
+<span class="sd">        entry is the discount applied to state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+<span class="sd">    Λ : Matrix[float]</span>
+<span class="sd">        The state-dependent bootstrapping matrix, a diagonal matrix whose</span>
+<span class="sd">        (i,i)-th entry is the bootstrapping (λ value) for state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+<span class="sd">    X : Matrix</span>
+<span class="sd">        The feature matrix, whose rows correspond to the feature representation</span>
+<span class="sd">        for each state.</span>
+<span class="sd">        For example, `X[i]` provides the features for state `i`.</span>
+<span class="sd">    ivec : Vector[float]</span>
+<span class="sd">        The per-state &quot;interest&quot; vector.</span>
+<span class="sd">        For example, `ivec[i]` is the interest allocated to state `i`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># compute intermediate quantities (could be more efficient)</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">etd_weights</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">Λ</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">ivec</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="followon"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.followon">[docs]</a><span class="k">def</span> <span class="nf">followon</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">ivec</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the followon trace&#39;s expected value for each state.&quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">is_stochastic</span><span class="p">(</span><span class="n">P</span><span class="p">))</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">Γ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Γ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+    <span class="n">di</span> <span class="o">=</span> <span class="n">linalg</span><span class="o">.</span><span class="n">stationary</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">*</span> <span class="n">ivec</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">Γ</span> <span class="o">@</span> <span class="n">P</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">di</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="potential"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.potential">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">potential</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the potential matrix for `A`, which is the sum of the matrix</span>
+<span class="sd">    geometric series (also referred to as the &quot;Neumann series&quot;.</span>
+
+<span class="sd">        B = \sum_{k=0}^{\infty} A^k = (I - A)^{-1}</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : Matrix[float]</span>
+<span class="sd">        A square matrix such that `(I - A)` is invertible.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">is_square</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+    <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">tol</span><span class="p">,</span> <span class="n">Number</span><span class="p">))</span>
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">A</span><span class="p">)</span>
+    <span class="n">ret</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># zero values within tolerance</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+<div class="viewcode-block" id="warp"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.warp">[docs]</a><span class="k">def</span> <span class="nf">warp</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">Λ</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The matrix which warps the distribution due to gamma and lambda.</span>
+<span class="sd">    warp = (I - P_{\pi} \Gamma \Lambda)^{-1}</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    P : Matrix[float]</span>
+<span class="sd">        The transition matrix, with `P[i,j]` defined as the probability of</span>
+<span class="sd">        transitioning to state `j` from state `i`.</span>
+<span class="sd">    Γ : Matrix[float]</span>
+<span class="sd">        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th</span>
+<span class="sd">        entry is the discount applied to state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+<span class="sd">    Λ : Matrix[float]</span>
+<span class="sd">        The state-dependent bootstrapping matrix, a diagonal matrix whose</span>
+<span class="sd">        (i,i)-th entry is the bootstrapping (λ value) for state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The term &quot;warp matrix&quot; is non-standard terminology, but is somewhat</span>
+<span class="sd">    appropriate because it represents the asymptotic result of bootstrapping</span>
+<span class="sd">    and discounting in the MDP.</span>
+<span class="sd">    The i-th row-sum reflects the influence of the subsequent states on state</span>
+<span class="sd">    `i`, while the j-th column sum reflects the influence of state `j` on its</span>
+<span class="sd">    successors.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">is_stochastic</span><span class="p">(</span><span class="n">P</span><span class="p">))</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">Γ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Γ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+    <span class="n">Λ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Λ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">potential</span><span class="p">(</span><span class="n">P</span> <span class="o">@</span> <span class="n">Γ</span> <span class="o">@</span> <span class="n">Λ</span><span class="p">)</span></div>
+
+
+
+<span class="c1">###############################################################################</span>
+<span class="c1"># Variance and Second Moment</span>
+<span class="c1">###############################################################################</span>
+
+<span class="c1"># TODO: Allow specifying Γ as a vector, constant, or maybe even dict?</span>
+<div class="viewcode-block" id="sobel_variance"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.sobel_variance">[docs]</a><span class="k">def</span> <span class="nf">sobel_variance</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">Γ</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the variance of the return using Sobel&#39;s method for a Markov</span>
+<span class="sd">    process.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    P : Matrix[float]</span>
+<span class="sd">        The transition matrix, with `P[i,j]` defined as the probability of</span>
+<span class="sd">        transitioning from state `i` to state `j` .</span>
+<span class="sd">    R : Matrix[float]</span>
+<span class="sd">        Element `R[i,j]` is defined to be the expected reward for transitioning</span>
+<span class="sd">        from state `i` to state `j`.</span>
+<span class="sd">    Γ : Matrix[float]</span>
+<span class="sd">        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th</span>
+<span class="sd">        entry is the discount applied to state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+
+<span class="sd">    TODO</span>
+<span class="sd">    -----</span>
+<span class="sd">    This function doesn&#39;t work if rewards are a function of state, action, and</span>
+<span class="sd">    the successor state.</span>
+<span class="sd">    It is easy to fix in a haphazard way, via summing over (s,a,s&#39;) for P and</span>
+<span class="sd">    R, but I would prefer to handle it via something more generic like numpy&#39;s</span>
+<span class="sd">    `einsum`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">is_stochastic</span><span class="p">(</span><span class="n">P</span><span class="p">))</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">R</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">Γ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Γ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+    <span class="n">v_pi</span> <span class="o">=</span> <span class="n">mc_return</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">Γ</span><span class="p">)</span>
+
+    <span class="c1"># Set up Bellman equation</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="o">-</span><span class="n">v_pi</span><span class="o">**</span><span class="mi">2</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ns</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ns</span><span class="p">):</span>
+            <span class="n">q</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">Γ</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="n">v_pi</span><span class="p">[</span><span class="n">j</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span>
+    <span class="c1"># Solve Bellman equation</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">P</span> <span class="o">@</span> <span class="n">Γ</span> <span class="o">@</span> <span class="n">Γ</span><span class="p">)</span> <span class="o">@</span> <span class="n">q</span></div>
+
+<span class="c1"># TODO: Allow specifying Γ as a vector, constant, or maybe even dict?</span>
+<div class="viewcode-block" id="second_moment"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.second_moment">[docs]</a><span class="k">def</span> <span class="nf">second_moment</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">Γ</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the second moment of the return using the method from White and</span>
+<span class="sd">    White for a Markov process.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    P : Matrix[float]</span>
+<span class="sd">        The transition matrix, with `P[i,j]` defined as the probability of</span>
+<span class="sd">        transitioning from state `i` to state `j` .</span>
+<span class="sd">    R : Matrix[float]</span>
+<span class="sd">        The expected reward matrix.</span>
+<span class="sd">        Element `R[i,j]` is defined to be the expected reward for transitioning</span>
+<span class="sd">        from state `i` to state `j`.</span>
+<span class="sd">    Γ : Matrix[float]</span>
+<span class="sd">        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th</span>
+<span class="sd">        entry is the discount applied to state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+
+<span class="sd">    TODO</span>
+<span class="sd">    -----</span>
+<span class="sd">    This function doesn&#39;t work if rewards are a function of state, action, and</span>
+<span class="sd">    the successor state.</span>
+<span class="sd">    It is easy to fix in a haphazard way, via summing over (s,a,s&#39;) for P and</span>
+<span class="sd">    R, but I would prefer to handle it via something more generic like numpy&#39;s</span>
+<span class="sd">    `einsum`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">is_stochastic</span><span class="p">(</span><span class="n">P</span><span class="p">))</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">R</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">Γ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Γ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+
+    <span class="c1"># Compute expected state values</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">P</span><span class="o">*</span><span class="n">R</span><span class="p">)</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+    <span class="n">v_pi</span> <span class="o">=</span> <span class="n">mc_return</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">Γ</span><span class="p">)</span>
+    <span class="n">γ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">Γ</span><span class="p">)</span>
+
+    <span class="c1"># Compute reward-like transition matrix</span>
+    <span class="n">R_bar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">ns</span><span class="p">,</span> <span class="n">ns</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ns</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ns</span><span class="p">):</span>
+            <span class="n">R_bar</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span> <span class="n">γ</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">v_pi</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+    <span class="c1"># Set up Bellman equation for second moment</span>
+    <span class="n">r_bar</span> <span class="o">=</span> <span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span class="n">R_bar</span><span class="p">)</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+
+    <span class="c1"># Solve the Bellman equation</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">P</span> <span class="o">@</span> <span class="n">Γ</span> <span class="o">@</span> <span class="n">Γ</span><span class="p">)</span> <span class="o">@</span> <span class="n">r_bar</span></div>
+
+<span class="c1"># TODO: Allow specifying Γ, Λ, as a vector, constant, or maybe even dict?</span>
+<div class="viewcode-block" id="lambda_second_moment"><a class="viewcode-back" href="../../api/mdpy.solve.html#mdpy.lambda_second_moment">[docs]</a><span class="k">def</span> <span class="nf">lambda_second_moment</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">Λ</span><span class="p">,</span> <span class="n">v_hat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the second moment of the λ-return using the method from White &amp;</span>
+<span class="sd">    White for a Markov process.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    P : Matrix[float]</span>
+<span class="sd">        The transition matrix, with `P[i,j]` defined as the probability of</span>
+<span class="sd">        transitioning from   state `i` to state `j` .</span>
+<span class="sd">    R : Matrix[float]</span>
+<span class="sd">        The expected reward matrix.</span>
+<span class="sd">        Element `R[i,j]` is defined to be the expected reward for transitioning</span>
+<span class="sd">        from state `i` to state `j`.</span>
+<span class="sd">    Γ : Matrix[float]</span>
+<span class="sd">        The state-dependent discount matrix, a diagonal matrix whose (i,i)-th</span>
+<span class="sd">        entry is the discount applied to state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+<span class="sd">    Λ : Matrix[float]</span>
+<span class="sd">        The state-dependent bootstrapping matrix, a diagonal matrix whose</span>
+<span class="sd">        (i,i)-th entry is the bootstrapping (λ value) for state `i`.</span>
+<span class="sd">        All entries should be in the interval [0, 1].</span>
+<span class="sd">    X : Matrix</span>
+<span class="sd">        The feature matrix, whose rows correspond to the feature representation</span>
+<span class="sd">        for each state.</span>
+<span class="sd">        For example, `X[i]` provides the features for state `i`.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Because we are using the λ-return, the choice of `v_hat` influences the</span>
+<span class="sd">    second moment.</span>
+<span class="sd">    The λ-return is defined via:</span>
+
+<span class="sd">        G_{t}^{λ} = R_{t+1} + γ_{t+1}( (1-λ_{t+1}) v(S_{t+1}) + λ_{t+1}G_{t+1}^{λ}</span>
+
+
+<span class="sd">    TODO</span>
+<span class="sd">    -----</span>
+<span class="sd">    This function doesn&#39;t work if rewards are a function of state, action, and</span>
+<span class="sd">    the successor state.</span>
+<span class="sd">    It is easy to fix in a haphazard way, via summing over (s,a,s&#39;) for P and</span>
+<span class="sd">    R, but I would prefer to handle it via something more generic like numpy&#39;s</span>
+<span class="sd">    `einsum`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">is_stochastic</span><span class="p">(</span><span class="n">P</span><span class="p">))</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">R</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">Γ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Γ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+    <span class="n">Λ</span> <span class="o">=</span> <span class="n">as_diag</span><span class="p">(</span><span class="n">Λ</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+    <span class="c1"># Expected immediate reward</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+    <span class="c1"># Lambda return may be different from approximate lambda return</span>
+    <span class="n">v_lm</span> <span class="o">=</span> <span class="n">lambda_return</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">Γ</span><span class="p">,</span> <span class="n">Λ</span><span class="p">,</span> <span class="n">v_hat</span><span class="p">)</span>
+
+    <span class="c1"># Get per-state discount and bootstrapping</span>
+    <span class="n">γ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">Γ</span><span class="p">)</span>
+    <span class="n">λ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">Λ</span><span class="p">)</span>
+
+    <span class="c1"># Compute reward-like transition matrix</span>
+    <span class="n">R_bar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">ns</span><span class="p">,</span> <span class="n">ns</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ns</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ns</span><span class="p">):</span>
+            <span class="n">R_bar</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> \
+                <span class="o">+</span> <span class="p">(</span><span class="n">γ</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">λ</span><span class="p">[</span><span class="n">j</span><span class="p">])</span><span class="o">*</span><span class="n">v_lm</span><span class="p">[</span><span class="n">j</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> \
+                <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span> <span class="n">γ</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">λ</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">v_hat</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="p">)</span> \
+                <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span> <span class="n">γ</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">λ</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">v_lm</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> \
+                <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span> <span class="p">(</span><span class="n">γ</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">λ</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">λ</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_hat</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="n">v_lm</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="p">)</span>
+    <span class="c1"># Set up Bellman equation for second moment</span>
+    <span class="n">r_bar</span> <span class="o">=</span> <span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span class="n">R_bar</span><span class="p">)</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+
+    <span class="c1"># Solve the Bellman equation</span>
+    <span class="k">return</span> <span class="n">pinv</span><span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">P</span> <span class="o">@</span> <span class="n">Γ</span> <span class="o">@</span> <span class="n">Γ</span> <span class="o">@</span> <span class="n">Λ</span> <span class="o">@</span> <span class="n">Λ</span><span class="p">)</span> <span class="o">@</span> <span class="n">r_bar</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, rldotai.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,396 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>mdpy.linalg &#8212; mdpy 0.1.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for mdpy.linalg</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">reduce</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">gcd</span>
+<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="k">import</span> <span class="n">det</span><span class="p">,</span> <span class="n">pinv</span><span class="p">,</span> <span class="n">matrix_rank</span><span class="p">,</span> <span class="n">norm</span>
+
+<span class="kn">from</span> <span class="nn">.util</span> <span class="k">import</span> <span class="n">as_array</span>
+
+
+<span class="c1"># Matrix/vector manipulation</span>
+<div class="viewcode-block" id="cols"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.cols">[docs]</a><span class="k">def</span> <span class="nf">cols</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">is_matrix</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">mat</span><span class="o">.</span><span class="n">T</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="colsum"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.colsum">[docs]</a><span class="k">def</span> <span class="nf">colsum</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">is_matrix</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij-&gt;j&#39;</span><span class="p">,</span> <span class="n">mat</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="rows"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.rows">[docs]</a><span class="k">def</span> <span class="nf">rows</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">is_matrix</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">mat</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="rowsum"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.rowsum">[docs]</a><span class="k">def</span> <span class="nf">rowsum</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">is_matrix</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij-&gt;i&#39;</span><span class="p">,</span> <span class="n">mat</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="someones"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.someones">[docs]</a><span class="k">def</span> <span class="nf">someones</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">*</span><span class="n">ones</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generate a vector of zeros except for ones at the given indices.&quot;&quot;&quot;</span>
+    <span class="c1"># TODO: a better name for this!</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">ret</span><span class="p">[[</span><span class="n">ones</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+<div class="viewcode-block" id="somezeros"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.somezeros">[docs]</a><span class="k">def</span> <span class="nf">somezeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">*</span><span class="n">zeros</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generate a vector of ones except at particular indices.&quot;&quot;&quot;</span>
+    <span class="c1"># TODO: get a better name for this!</span>
+    <span class="c1"># TODO: fix issue where *zeros is empty</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">ret</span><span class="p">[[</span><span class="n">zeros</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+<div class="viewcode-block" id="unit"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.unit">[docs]</a><span class="k">def</span> <span class="nf">unit</span><span class="p">(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">ix</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generate a unit vector, with the entry at `ix` set to 1.&quot;&quot;&quot;</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">ret</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="normalize"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.normalize">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Normalize an array along an axis.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_normalize</span><span class="p">(</span><span class="n">vec</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">vec</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">axis</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="n">_normalize</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_normalize</span><span class="p">(</span><span class="n">array</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="as_stochastic"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.as_stochastic">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">as_stochastic</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="n">mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_square</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Stochastic matrices must be square.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_nonnegative</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Stochastic matrices must have all nonnegative entries&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">normalize</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="random_binary"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.random_binary">[docs]</a><span class="k">def</span> <span class="nf">random_binary</span><span class="p">(</span><span class="n">num_states</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="n">num_active</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a matrix of random binary features, with `num_states` rows and</span>
+<span class="sd">    `num_features` columns, each row having `num_active` entries equal to one</span>
+<span class="sd">    and the rest equal to zero.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ixs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_features</span><span class="p">)</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_states</span><span class="p">):</span>
+        <span class="n">active</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">ixs</span><span class="p">,</span> <span class="n">num_active</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">fvec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_features</span><span class="p">)</span>
+        <span class="n">fvec</span><span class="p">[</span><span class="n">active</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fvec</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span></div>
+
+
+<span class="c1"># Vector properties</span>
+<div class="viewcode-block" id="is_pvec"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.is_pvec">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">is_pvec</span><span class="p">(</span><span class="n">pvec</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if a vector represents a probability distribution.&quot;&quot;&quot;</span>
+    <span class="n">vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">pvec</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">pvec</span><span class="p">))</span> \
+    <span class="ow">and</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">vec</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">))</span> \
+    <span class="ow">and</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">tol</span> <span class="o">&lt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="o">+</span><span class="n">tol</span><span class="p">)</span></div>
+
+
+<span class="c1"># Matrix properties</span>
+
+<div class="viewcode-block" id="has_absorbing"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.has_absorbing">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">has_absorbing</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if the transition matrix has absorbing states.</span>
+
+<span class="sd">    A state is absorbing if its only outgoing transition is to itself.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">find_terminals</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="is_aperiodic"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.is_aperiodic">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">is_aperiodic</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if a stochastic matrix is aperiodic.&quot;&quot;&quot;</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">is_aperiodic</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="is_diagonal"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.is_diagonal">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">is_diagonal</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if a matrix is diagonal.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_square</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">off_diagonals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">)),</span> <span class="n">mat</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="mi">0</span> <span class="o">==</span> <span class="n">off_diagonals</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="is_ergodic"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.is_ergodic">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">is_ergodic</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if the matrix is ergodic (irreducible and aperiodic).&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="ow">not</span><span class="p">(</span><span class="n">is_reducible</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span> <span class="ow">or</span> <span class="n">is_periodic</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="is_matrix"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.is_matrix">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">is_matrix</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test that an array is a matrix.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">mat</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span></div>
+
+<div class="viewcode-block" id="is_nonnegative"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.is_nonnegative">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">is_nonnegative</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if a matrix is nonnegative.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">mat</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="is_periodic"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.is_periodic">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">is_periodic</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if the transition matrix is periodic.</span>
+
+<span class="sd">    A matrix is periodic if it has a period greater than `2`, that is, if it</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
+    <span class="k">return</span> <span class="ow">not</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">is_aperiodic</span><span class="p">(</span><span class="n">graph</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="is_distribution"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.is_distribution">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">is_distribution</span><span class="p">(</span><span class="n">vec</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if a vector is a probability distribution&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">vec</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">vec</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="is_reducible"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.is_reducible">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">is_reducible</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if the matrix is reducible. That is, if all states are part of the</span>
+<span class="sd">    same communicating class (can be reached from each other).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">is_nonnegative</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span>
+    <span class="c1">#TODO: Find a better method for this</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">)):</span>
+        <span class="n">S</span> <span class="o">+=</span> <span class="n">P</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">mat</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">S</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="is_square"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.is_square">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">is_square</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Ensure that an array is a 2-D square matrix.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="is_stochastic"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.is_stochastic">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">is_stochastic</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if a matrix is (right) stochastic.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> \
+    <span class="ow">and</span> <span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> \
+    <span class="ow">and</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">([</span><span class="n">row</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">mat</span><span class="p">]))</span> \
+    <span class="ow">and</span> <span class="p">(</span><span class="nb">all</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">tol</span> <span class="o">&lt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="o">+</span><span class="n">tol</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">mat</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="is_substochastic"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.is_substochastic">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">is_substochastic</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if a matrix is (right) substochastic.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> \
+    <span class="ow">and</span> <span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> \
+    <span class="ow">and</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">([</span><span class="n">row</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">mat</span><span class="p">]))</span> \</div>
+
+<span class="c1">## Information about MDPs utilities</span>
+
+<div class="viewcode-block" id="find_terminals"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.find_terminals">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">find_terminals</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Find terminal states in a transition matrix.&quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="n">ix</span> <span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span> <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="find_nonterminals"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.find_nonterminals">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">find_nonterminals</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Find nonterminal states in a transition matrix.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">ix</span> <span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span> <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="get_period"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.get_period">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">get_period</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Find the period of the stochastic matrix `mat`.</span>
+
+<span class="sd">    Uses `networkx` to find the cycles in the graph and computes the GCD over</span>
+<span class="sd">    their lengths.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The period is defined as the GCD of all possible return times to a state,</span>
+<span class="sd">    or the integer that divides the length of every cycle in the transition</span>
+<span class="sd">    graph.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">gcd</span><span class="p">,</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">nx</span><span class="o">.</span><span class="n">simple_cycles</span><span class="p">(</span><span class="n">graph</span><span class="p">)])</span></div>
+
+
+<div class="viewcode-block" id="approx_stationary"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.approx_stationary">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">approx_stationary</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">s0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">iterlimit</span><span class="o">=</span><span class="mi">100000</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the approximate stationary distribution of a stochastic matrix,</span>
+<span class="sd">    by repeatedly multiplying a probability vector by the matrix until it</span>
+<span class="sd">    converges.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">is_stochastic</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span><span class="n">tol</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">s0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">s0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span>
+        <span class="n">s0</span> <span class="o">=</span> <span class="n">s0</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_distribution</span><span class="p">(</span><span class="n">s0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Failed to converge to &quot;</span><span class="p">)</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">is_distribution</span><span class="p">(</span><span class="n">s0</span><span class="p">))</span>
+
+    <span class="c1"># Approximate the stationary distribution by repeated transitions</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">s0</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterlimit</span><span class="p">):</span>
+        <span class="c1"># TODO: is normalization here correct?</span>
+        <span class="n">sp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">mat</span><span class="p">)</span>
+        <span class="n">sp</span> <span class="o">=</span> <span class="n">sp</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">sp</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">sp</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">s</span><span class="c1">#/np.sum(np.abs(s))</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">sp</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Failed to converge within tolerance:&quot;</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">s0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="stationary"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.stationary">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">stationary</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the stationary distribution for transition matrix `mat`, via</span>
+<span class="sd">    computing the solution to the system of equations (P.T - I)*\pi = 0.</span>
+
+<span class="sd">    NB: Assumes `mat` is ergodic (aperiodic and irreducible).</span>
+<span class="sd">    Could do with LU factorization -- c.f. 54-14 in Handbook of Linear Algebra</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">is_stochastic</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span>
+
+    <span class="n">P</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">)))</span>
+    <span class="n">P</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span>
+    <span class="n">b</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">normalize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="stationary_matrix"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.stationary_matrix">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">stationary_matrix</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the matrix `A` where each row is the stationary distribution for</span>
+<span class="sd">    the given matrix `mat`.</span>
+
+<span class="sd">    Computes the stationary distribution for transition matrix `mat`, via</span>
+<span class="sd">    computing the solution to the system of equations (P.T - I)*\pi = 0.</span>
+
+<span class="sd">    NB: Assumes `mat` is ergodic (aperiodic and irreducible).</span>
+<span class="sd">    Could do with LU factorization -- c.f. 54-14 in Handbook of Linear Algebra</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">is_stochastic</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">ns</span><span class="p">))</span>
+    <span class="n">P</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+    <span class="n">b</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">d_pi</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">d_pi</span><span class="p">,</span> <span class="p">(</span><span class="n">ns</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="get_all_stationary"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.get_all_stationary">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">get_all_stationary</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute /all/ stationary states for transition matrix `mat`, by</span>
+<span class="sd">    finding the left eigenvectors with an associated eigenvalue of `1`.</span>
+
+<span class="sd">    NB: Has a lot of transposing going on in order to accomodate numpy.</span>
+<span class="sd">    NB: Uses `np.isclose` for checking whether eigenvalues are 1.</span>
+<span class="sd">    NB: Tries to ensure it returns real-valued left eigenvectors.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">is_stochastic</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">vals</span><span class="p">,</span> <span class="n">vecs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="n">vecs</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">real_if_close</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">states</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="distribution_matrix"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.distribution_matrix">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">distribution_matrix</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the stationary distribution for a matrix, and return the</span>
+<span class="sd">    diagonal matrix with the stationary distribution along its diagonal.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">stationary</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="matrix_series"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.matrix_series">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">matrix_series</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the matrix series for `n` terms using matrix `mat`.&quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">is_square</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span>
+    <span class="n">_I</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">_I</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">+=</span> <span class="n">mat</span> <span class="o">@</span> <span class="n">ret</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+<div class="viewcode-block" id="matrix_power"><a class="viewcode-back" href="../../api/mdpy.linalg.html#mdpy.matrix_power">[docs]</a><span class="nd">@as_array</span>
+<span class="k">def</span> <span class="nf">matrix_power</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the matrix `mat` raised to the power `n`.&quot;&quot;&quot;</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">is_square</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">ret</span> <span class="o">@</span> <span class="n">mat</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, rldotai.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

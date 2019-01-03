@@ -1,0 +1,7 @@
+mdpy.examples.boyan\_chain module
+=================================
+
+.. automodule:: mdpy.examples.boyan_chain
+    :members:
+    :undoc-members:
+    :show-inheritance:

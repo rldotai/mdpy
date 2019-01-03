@@ -1,0 +1,517 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>mdpy.solve module &#8212; mdpy 0.1.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-mdpy.solve">
+<span id="mdpy-solve-module"></span><h1>mdpy.solve module<a class="headerlink" href="#module-mdpy.solve" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="mdpy.solve.delta_matrix">
+<code class="descclassname">mdpy.solve.</code><code class="descname">delta_matrix</code><span class="sig-paren">(</span><em>R</em>, <em>Γ</em>, <em>v</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#delta_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.delta_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the matrix whose (i,j)-th entry represents the expected TD-error
+for transitioning to state <cite>j</cite> from state <cite>i</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.solve.etd_values">
+<code class="descclassname">mdpy.solve.</code><code class="descname">etd_values</code><span class="sig-paren">(</span><em>P</em>, <em>r</em>, <em>Γ</em>, <em>Λ</em>, <em>X</em>, <em>ivec</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#etd_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.etd_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the state-values found by Emphatic TD(λ) by solving the
+appropriate Bellman equation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>r</strong> (<em>The expected reward vector.</em>) – Element <cite>r[i]</cite> is defined to be the expected reward over the
+transitions from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>Λ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent bootstrapping matrix, a diagonal matrix whose
+(i,i)-th entry is the bootstrapping (λ value) for state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>X</strong> (<em>Matrix</em>) – The feature matrix, whose rows correspond to the feature representation
+for each state.
+For example, <cite>X[i]</cite> provides the features for state <cite>i</cite>.</li>
+<li><strong>ivec</strong> (<em>Vector</em><em>[</em><em>float</em><em>]</em>) – The per-state “interest” vector.
+For example, <cite>ivec[i]</cite> is the interest allocated to state <cite>i</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.solve.etd_weights">
+<code class="descclassname">mdpy.solve.</code><code class="descname">etd_weights</code><span class="sig-paren">(</span><em>P</em>, <em>r</em>, <em>Γ</em>, <em>Λ</em>, <em>X</em>, <em>ivec</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#etd_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.etd_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the fixed-point of ETD(λ) by solving its Bellman equation.
+The weight vector returned corresponds to the asymptotic weights for found
+by Emphatic TD(λ).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>r</strong> (<em>The expected reward vector.</em>) – Element <cite>r[i]</cite> is defined to be the expected reward over the
+transitions from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>Λ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent bootstrapping matrix, a diagonal matrix whose
+(i,i)-th entry is the bootstrapping (λ value) for state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>X</strong> (<em>Matrix</em>) – The feature matrix, whose rows correspond to the feature representation
+for each state.
+For example, <cite>X[i]</cite> provides the features for state <cite>i</cite>.</li>
+<li><strong>ivec</strong> (<em>Vector</em><em>[</em><em>float</em><em>]</em>) – The per-state “interest” vector.
+For example, <cite>ivec[i]</cite> is the interest allocated to state <cite>i</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.solve.expected_delta">
+<code class="descclassname">mdpy.solve.</code><code class="descname">expected_delta</code><span class="sig-paren">(</span><em>P</em>, <em>R</em>, <em>Γ</em>, <em>v</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#expected_delta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.expected_delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>The expected TD-error given transitions <cite>P</cite>, reward matrix <cite>R</cite>,
+discount matrix <cite>Γ</cite>, and values <cite>v</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.solve.expected_reward">
+<code class="descclassname">mdpy.solve.</code><code class="descname">expected_reward</code><span class="sig-paren">(</span><em>P</em>, <em>R</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#expected_reward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.expected_reward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expected immediate reward given transition matrix <cite>P</cite> and
+expected reward matrix <cite>R</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.solve.followon">
+<code class="descclassname">mdpy.solve.</code><code class="descname">followon</code><span class="sig-paren">(</span><em>P</em>, <em>Γ</em>, <em>ivec</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#followon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.followon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the followon trace’s expected value for each state.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.solve.lambda_return">
+<code class="descclassname">mdpy.solve.</code><code class="descname">lambda_return</code><span class="sig-paren">(</span><em>P</em>, <em>r</em>, <em>Γ</em>, <em>Λ</em>, <em>v_hat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#lambda_return"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.lambda_return" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the expected λ-return for the MDP.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>Λ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent bootstrapping matrix, a diagonal matrix whose
+(i,i)-th entry is the bootstrapping (λ value) for state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>X</strong> (<em>Matrix</em>) – The feature matrix, whose rows correspond to the feature representation
+for each state.
+For example, <cite>X[i]</cite> provides the features for state <cite>i</cite>.</li>
+<li><strong>r</strong> (<em>Vector</em><em>[</em><em>float</em><em>]</em><em></em>) – Element <cite>r[i]</cite> is defined to be the expected reward over the
+transitions from state <cite>i</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>If <cite>v_hat</cite> is the “true” value function (i.e., the values found by solving
+the Bellman equation) then the λ-return will be the same as the Monte-Carlo
+return (which in expectation <em>is</em> the true value function).</p>
+<p>The λ-return is defined via:</p>
+<blockquote>
+<div>G_{t}^{λ} = R_{t+1} + γ_{t+1}( (1-λ_{t+1}) v(S_{t+1}) + λ_{t+1}G_{t+1}^{λ}</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.solve.lambda_second_moment">
+<code class="descclassname">mdpy.solve.</code><code class="descname">lambda_second_moment</code><span class="sig-paren">(</span><em>P</em>, <em>R</em>, <em>Γ</em>, <em>Λ</em>, <em>v_hat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#lambda_second_moment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.lambda_second_moment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the second moment of the λ-return using the method from White &amp;
+White for a Markov process.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning from   state <cite>i</cite> to state <cite>j</cite> .</li>
+<li><strong>R</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The expected reward matrix.
+Element <cite>R[i,j]</cite> is defined to be the expected reward for transitioning
+from state <cite>i</cite> to state <cite>j</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>Λ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent bootstrapping matrix, a diagonal matrix whose
+(i,i)-th entry is the bootstrapping (λ value) for state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>X</strong> (<em>Matrix</em>) – The feature matrix, whose rows correspond to the feature representation
+for each state.
+For example, <cite>X[i]</cite> provides the features for state <cite>i</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Because we are using the λ-return, the choice of <cite>v_hat</cite> influences the
+second moment.
+The λ-return is defined via:</p>
+<blockquote>
+<div>G_{t}^{λ} = R_{t+1} + γ_{t+1}( (1-λ_{t+1}) v(S_{t+1}) + λ_{t+1}G_{t+1}^{λ}</div></blockquote>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">This function doesn’t work if rewards are a function of state, action, and
+the successor state.
+It is easy to fix in a haphazard way, via summing over (s,a,s’) for P and
+R, but I would prefer to handle it via something more generic like numpy’s
+<cite>einsum</cite>.</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.solve.ls_values">
+<code class="descclassname">mdpy.solve.</code><code class="descname">ls_values</code><span class="sig-paren">(</span><em>P</em>, <em>r</em>, <em>Γ</em>, <em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#ls_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.ls_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the state-values under least-squares function approximation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>r</strong> (<em>The expected reward vector.</em>) – Element <cite>r[i]</cite> is defined to be the expected reward over the
+transitions from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>X</strong> (<em>Matrix</em>) – The feature matrix, whose rows correspond to the feature representation
+for each state.
+For example, <cite>X[i]</cite> provides the features for state <cite>i</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.solve.ls_weights">
+<code class="descclassname">mdpy.solve.</code><code class="descname">ls_weights</code><span class="sig-paren">(</span><em>P</em>, <em>r</em>, <em>Γ</em>, <em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#ls_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.ls_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the least-squares weights for the MDP given feature matrix <cite>X</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>r</strong> (<em>The expected reward vector.</em>) – Element <cite>r[i]</cite> is defined to be the expected reward over the
+transitions from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>X</strong> (<em>Matrix</em>) – The feature matrix, whose rows correspond to the feature representation
+for each state.
+For example, <cite>X[i]</cite> provides the features for state <cite>i</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.solve.mc_return">
+<code class="descclassname">mdpy.solve.</code><code class="descname">mc_return</code><span class="sig-paren">(</span><em>P</em>, <em>r</em>, <em>Γ</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#mc_return"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.mc_return" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the expected Monte-Carlo return for the Markov chain defined by
+<cite>P</cite> with expected reward <cite>r</cite>.
+This is the result of solving the Bellman equation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>r</strong> (<em>The expected reward vector.</em>) – Element <cite>r[i]</cite> is defined to be the expected reward over the
+transitions from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.solve.potential">
+<code class="descclassname">mdpy.solve.</code><code class="descname">potential</code><span class="sig-paren">(</span><em>A</em>, <em>tol=1e-06</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.potential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the potential matrix for <cite>A</cite>, which is the sum of the matrix
+geometric series (also referred to as the “Neumann series”.</p>
+<blockquote>
+<div>B = sum_{k=0}^{infty} A^k = (I - A)^{-1}</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>A</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – A square matrix such that <cite>(I - A)</cite> is invertible.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.solve.second_moment">
+<code class="descclassname">mdpy.solve.</code><code class="descname">second_moment</code><span class="sig-paren">(</span><em>P</em>, <em>R</em>, <em>Γ</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#second_moment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.second_moment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the second moment of the return using the method from White and
+White for a Markov process.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning from state <cite>i</cite> to state <cite>j</cite> .</li>
+<li><strong>R</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The expected reward matrix.
+Element <cite>R[i,j]</cite> is defined to be the expected reward for transitioning
+from state <cite>i</cite> to state <cite>j</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">This function doesn’t work if rewards are a function of state, action, and
+the successor state.
+It is easy to fix in a haphazard way, via summing over (s,a,s’) for P and
+R, but I would prefer to handle it via something more generic like numpy’s
+<cite>einsum</cite>.</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.solve.sobel_variance">
+<code class="descclassname">mdpy.solve.</code><code class="descname">sobel_variance</code><span class="sig-paren">(</span><em>P</em>, <em>R</em>, <em>Γ</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#sobel_variance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.sobel_variance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the variance of the return using Sobel’s method for a Markov
+process.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning from state <cite>i</cite> to state <cite>j</cite> .</li>
+<li><strong>R</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – Element <cite>R[i,j]</cite> is defined to be the expected reward for transitioning
+from state <cite>i</cite> to state <cite>j</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-2">
+<p class="first admonition-title">Todo</p>
+<p class="last">This function doesn’t work if rewards are a function of state, action, and
+the successor state.
+It is easy to fix in a haphazard way, via summing over (s,a,s’) for P and
+R, but I would prefer to handle it via something more generic like numpy’s
+<cite>einsum</cite>.</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.solve.td_values">
+<code class="descclassname">mdpy.solve.</code><code class="descname">td_values</code><span class="sig-paren">(</span><em>P</em>, <em>r</em>, <em>Γ</em>, <em>Λ</em>, <em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#td_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.td_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute state values found at the TD fixed point for the MDP under
+linear function approximation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>r</strong> (<em>The expected reward vector.</em>) – Element <cite>r[i]</cite> is defined to be the expected reward over the
+transitions from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>Λ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent bootstrapping matrix, a diagonal matrix whose
+(i,i)-th entry is the bootstrapping (λ value) for state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>X</strong> (<em>Matrix</em>) – The feature matrix, whose rows correspond to the feature representation
+for each state.
+For example, <cite>X[i]</cite> provides the features for state <cite>i</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.solve.td_weights">
+<code class="descclassname">mdpy.solve.</code><code class="descname">td_weights</code><span class="sig-paren">(</span><em>P</em>, <em>r</em>, <em>Γ</em>, <em>Λ</em>, <em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#td_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.td_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the weights found at the TD fixed point for the MDP under
+linear function approximation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>r</strong> (<em>The expected reward vector.</em>) – Element <cite>r[i]</cite> is defined to be the expected reward over the
+transitions from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>Λ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent bootstrapping matrix, a diagonal matrix whose
+(i,i)-th entry is the bootstrapping (λ value) for state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>X</strong> (<em>Matrix</em>) – The feature matrix, whose rows correspond to the feature representation
+for each state.
+For example, <cite>X[i]</cite> provides the features for state <cite>i</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>If the feature matrix <cite>X</cite> is of the same rank as <cite>P</cite>, then the result should
+be the same as computing the exact value function.
+If <cite>Λ = diag([1, 1, …, 1])</cite>, then the result should be the same as
+computing the weights under least-squares.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mdpy.solve.warp">
+<code class="descclassname">mdpy.solve.</code><code class="descname">warp</code><span class="sig-paren">(</span><em>P</em>, <em>Γ</em>, <em>Λ</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mdpy/solve.html#warp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mdpy.solve.warp" title="Permalink to this definition">¶</a></dt>
+<dd><p>The matrix which warps the distribution due to gamma and lambda.
+warp = (I - P_{pi} Gamma Lambda)^{-1}</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>P</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The transition matrix, with <cite>P[i,j]</cite> defined as the probability of
+transitioning to state <cite>j</cite> from state <cite>i</cite>.</li>
+<li><strong>Γ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent discount matrix, a diagonal matrix whose (i,i)-th
+entry is the discount applied to state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+<li><strong>Λ</strong> (<em>Matrix</em><em>[</em><em>float</em><em>]</em>) – The state-dependent bootstrapping matrix, a diagonal matrix whose
+(i,i)-th entry is the bootstrapping (λ value) for state <cite>i</cite>.
+All entries should be in the interval [0, 1].</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>The term “warp matrix” is non-standard terminology, but is somewhat
+appropriate because it represents the asymptotic result of bootstrapping
+and discounting in the MDP.
+The i-th row-sum reflects the influence of the subsequent states on state
+<cite>i</cite>, while the j-th column sum reflects the influence of state <cite>j</cite> on its
+successors.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/mdpy.solve.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, rldotai.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/api/mdpy.solve.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
